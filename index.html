@@ -520,6 +520,21 @@
             line-height: 1.6;
         }
 
+        .timeline-item .school-image {
+            margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            max-width: 100%;
+            height: auto;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item .school-image:hover {
+            border-color: rgba(0, 212, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+
         .timeline-item .tech-stack {
             margin-top: 10px;
             padding-top: 10px;
@@ -564,6 +579,20 @@
 
         .project-card:hover::before {
             opacity: 1;
+        }
+
+        .project-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .project-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.2);
+            transform: translateY(-5px);
         }
 
         .project-image {
@@ -822,6 +851,7 @@
                         <div class="company">國立政治大學</div>
                         <div class="description">專注於 LLM 與形式驗證的結合研究，在 SOSLAB (Software Security Laboratory)
                             進行論文研究。研究主題：應用代理型 LLM 架構和 SMT 求解器分析財務案例法律</div>
+                        <img src="pic/school/nccu.png" alt="國立政治大學" class="school-image">
                     </div>
                 </div>
                 <div class="timeline-item">
@@ -830,6 +860,7 @@
                         <div class="title">學士 - 醫療資訊學系</div>
                         <div class="company">高雄醫學大學</div>
                         <div class="description">醫療與資訊管理的跨領域學習，奠定了扎實的資訊基礎</div>
+                        <img src="pic/school/kmu.png" alt="高雄醫學大學" class="school-image">
                     </div>
                 </div>
             </div>
@@ -1058,33 +1089,42 @@
         <section id="projects" class="glass-card">
             <h2 class="section-title">會議與發表</h2>
             <div class="projects">
-                <div class="glass-card">
+                <a href="research.html#kdd2025" class="glass-card project-link">
                     <div class="project-image">📊</div>
                     <div class="project-info">
                         <div class="project-title">KDD 2025 ML in Finance Workshop</div>
                         <div class="project-type">📍 Toronto, Canada</div>
                         <div class="project-description">口頭報告者 - "A Hybrid Framework for Financial Regulatory
                             Compliance: Integrating LLMs and SMT Solvers for Automated Legal Analysis"</div>
+                        <div class="project-tags">
+                            <span class="tag">查看詳情 →</span>
+                        </div>
                     </div>
-                </div>
-                <div class="glass-card">
+                </a>
+                <a href="research.html" class="glass-card project-link">
                     <div class="project-image">🏆</div>
                     <div class="project-info">
                         <div class="project-title">2nd ACM International Conference on AI-powered Software</div>
                         <div class="project-type">📍 Seoul, South Korea | 🏅 ACM SIGSOFT Distinguished Paper Award</div>
                         <div class="project-description">口頭報告者 - "Neuro-Symbolic Compliance: Integrating LLMs and SMT
                             Solver for Automated Financial Legal Analysis"</div>
+                        <div class="project-tags">
+                            <span class="tag">查看詳情 →</span>
+                        </div>
                     </div>
-                </div>
-                <div class="glass-card">
+                </a>
+                <a href="research.html" class="glass-card project-link">
                     <div class="project-image">📝</div>
                     <div class="project-info">
                         <div class="project-title">ACM Transactions on Software Engineering and Methodology</div>
                         <div class="project-type">🔄 審查中 | 特刊 2025: Agentic AI in Software</div>
                         <div class="project-description">"Architecting Optimized Legal Corrections: A Neuro-Symbolic
                             Pipeline of Agentic AI Compliance"</div>
+                        <div class="project-tags">
+                            <span class="tag">查看詳情 →</span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </section>
 
