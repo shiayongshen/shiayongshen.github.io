@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,17 +22,9 @@
         }
 
         @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* AI 風格背景粒子 */
@@ -49,23 +40,10 @@
         }
 
         @keyframes float {
-            0% {
-                transform: translateY(0) translateX(0);
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 0.5;
-            }
-
-            90% {
-                opacity: 0.5;
-            }
-
-            100% {
-                transform: translateY(-100vh) translateX(100px);
-                opacity: 0;
-            }
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
         }
 
         /* 玻璃形態效果 */
@@ -124,15 +102,8 @@
         }
 
         @keyframes glow {
-
-            0%,
-            100% {
-                filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
-            }
-
-            50% {
-                filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.8));
-            }
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.8)); }
         }
 
         nav .menu {
@@ -213,15 +184,8 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-            }
-
-            50% {
-                transform: translate(-50%, -50%) scale(1.2);
-            }
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
         }
 
         .hero h1 {
@@ -236,17 +200,9 @@
         }
 
         @keyframes gradientText {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .hero p {
@@ -363,15 +319,8 @@
         }
 
         @keyframes borderGlow {
-
-            0%,
-            100% {
-                opacity: 0;
-            }
-
-            50% {
-                opacity: 1;
-            }
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
         }
 
         .about-image img {
@@ -745,7 +694,6 @@
         }
     </style>
 </head>
-
 <body>
     <!-- 背景粒子效果 -->
     <script>
@@ -769,14 +717,14 @@
         <div class="container">
             <div class="logo">✦ Vincent HSIA</div>
             <ul class="menu">
-                <li><a href="#about">關於我</a></li>
-                <li><a href="#skills">技能</a></li>
-                <li><a href="#experience">經歷</a></li>
-                <li><a href="#research">研究</a></li>
-                <li><a href="#contact">聯絡</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#research">Research</a></li>
+                <li><a href="#contact">Contact</a></li>
                 <li class="lang-switch">
-                    <a href="index.html" class="active">中文</a> | 
-                    <a href="index-en.html">English</a>
+                    <a href="index.html">中文</a> | 
+                    <a href="index-en.html" class="active">English</a>
                 </li>
             </ul>
         </div>
@@ -787,49 +735,47 @@
         <section class="hero">
             <h1>Yung Shen (Vincent) HSIA</h1>
             <p>AI Engineer | Machine Learning Specialist | LLM Application Developer</p>
-            <p class="tagline">✦ 用 AI 和代碼創造未來 ✦</p>
+            <p class="tagline">✦ Building the Future with AI & Code ✦</p>
             <div class="cta-buttons">
-                <a href="#contact" class="btn btn-primary">聯絡我</a>
-                <a href="#experience" class="btn btn-secondary">查看經歷</a>
+                <a href="#contact" class="btn btn-primary">Get in Touch</a>
+                <a href="#experience" class="btn btn-secondary">View Experience</a>
             </div>
         </section>
 
         <!-- 個人簡介 -->
         <section id="about" class="glass-card">
-            <h2 class="section-title">關於我</h2>
+            <h2 class="section-title">About Me</h2>
             <div class="about">
                 <div class="about-text">
-                    <h3>你好，我是 Yung Shen (Vincent) HSIA</h3>
-                    <p>我是國立政治大學資訊管理學系碩一學生，專注於 AI 和機器學習領域的應用與研究。我有豐富的實習經驗，涵蓋 AI 軟體工程、大型語言模型(LLM)整合、智能系統設計等領域。</p>
-                    <p>我的職業目標是成為 AI 工程師、機器學習工程師或 LLM 工程師，利用我的技術專長開發具有影響力的 AI 解決方案。我擅長將複雜的 AI 概念轉化為可運行的應用程序。</p>
-                    <p>我曾在 Trend Micro、Chunghwa Telecom、Bank SinoPac 等知名科技企業實習，累積了實戰經驗。同時在國立政治大學軟體安全實驗室(SOSLAB)從事 LLM
-                        與形式驗證的結合研究。</p>
+                    <h3>Hi, I'm Yung Shen (Vincent) HSIA</h3>
+                    <p>I am a Master's student in Management Information Systems at National Chengchi University, specializing in AI and Machine Learning applications and research. With extensive internship experience in AI software engineering, LLM integration, and intelligent system design, I am passionate about developing innovative AI solutions.</p>
+                    <p>My career goal is to pursue roles such as AI Engineer, Machine Learning Engineer, or LLM Engineer, leveraging my technical expertise to build impactful and scalable AI solutions. I excel at transforming complex AI concepts into practical, runnable applications.</p>
+                    <p>I have interned at leading technology companies including Trend Micro, Chunghwa Telecom, and Bank SinoPac, gaining real-world experience. Currently, I conduct research at SOSLAB (Software Security Laboratory) at National Chengchi University, focusing on integrating formal verification with LLM applications.</p>
                 </div>
                 <div class="about-image">
-                    <img src="https://via.placeholder.com/300x300?text=Vincent+HSIA" alt="個人照片">
+                    <img src="https://via.placeholder.com/300x300?text=Vincent+HSIA" alt="Profile Photo">
                 </div>
             </div>
         </section>
 
         <!-- 教育背景 -->
         <section id="education" class="glass-card">
-            <h2 class="section-title">教育背景</h2>
+            <h2 class="section-title">Education</h2>
             <div class="timeline">
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2024 – 現在</div>
-                        <div class="title">碩士 - 資訊管理學系</div>
-                        <div class="company">國立政治大學</div>
-                        <div class="description">專注於 LLM 與形式驗證的結合研究，在 SOSLAB (Software Security Laboratory)
-                            進行論文研究。研究主題：應用代理型 LLM 架構和 SMT 求解器分析財務案例法律</div>
+                        <div class="year">2024 – Present</div>
+                        <div class="title">Master of Science in Management Information Systems</div>
+                        <div class="company">National Chengchi University</div>
+                        <div class="description">Conducting research on integrating formal verification with LLM applications at SOSLAB (Software Security Laboratory). Research Topic: Applying Agentic LLM Architectures and SMT Solvers to the Analysis of Financial Case Law</div>
                     </div>
                 </div>
                 <div class="timeline-item">
                     <div class="content">
                         <div class="year">2020 – 2024</div>
-                        <div class="title">學士 - 醫療資訊學系</div>
-                        <div class="company">高雄醫學大學</div>
-                        <div class="description">醫療與資訊管理的跨領域學習，奠定了扎實的資訊基礎</div>
+                        <div class="title">Bachelor of Science in Healthcare Administration Medical Informatics</div>
+                        <div class="company">Kaohsiung Medical University</div>
+                        <div class="description">Interdisciplinary study of healthcare and information management, establishing a solid foundation in computer science</div>
                     </div>
                 </div>
             </div>
@@ -837,10 +783,10 @@
 
         <!-- 技能 -->
         <section id="skills" class="glass-card">
-            <h2 class="section-title">技術技能</h2>
+            <h2 class="section-title">Technical Skills</h2>
             <div class="skills-grid">
                 <div class="skill-card">
-                    <div class="skill-category">🐍 程式語言</div>
+                    <div class="skill-category">🐍 Programming Languages</div>
                     <div class="skill-items">
                         <span class="skill-item">Python</span>
                         <span class="skill-item">C++</span>
@@ -850,7 +796,7 @@
                     </div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-category">🌐 Web 框架</div>
+                    <div class="skill-category">🌐 Web Frameworks</div>
                     <div class="skill-items">
                         <span class="skill-item">Django</span>
                         <span class="skill-item">Flask</span>
@@ -860,7 +806,7 @@
                     </div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-category">🤖 AI/ML 框架</div>
+                    <div class="skill-category">🤖 AI/ML Frameworks</div>
                     <div class="skill-items">
                         <span class="skill-item">TensorFlow</span>
                         <span class="skill-item">PyTorch</span>
@@ -870,7 +816,7 @@
                     </div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-category">🧠 LLM 應用</div>
+                    <div class="skill-category">🧠 LLM Applications</div>
                     <div class="skill-items">
                         <span class="skill-item">LLM Fine-tuning</span>
                         <span class="skill-item">RAG</span>
@@ -880,7 +826,7 @@
                     </div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-category">💾 資料庫</div>
+                    <div class="skill-category">💾 Databases</div>
                     <div class="skill-items">
                         <span class="skill-item">PostgreSQL</span>
                         <span class="skill-item">MySQL</span>
@@ -890,7 +836,7 @@
                     </div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-category">🛠️ 開發工具</div>
+                    <div class="skill-category">🛠️ Developer Tools</div>
                     <div class="skill-items">
                         <span class="skill-item">Git/GitHub</span>
                         <span class="skill-item">Docker</span>
@@ -904,14 +850,14 @@
 
         <!-- 實習經歷 -->
         <section id="experience" class="glass-card">
-            <h2 class="section-title">實習經歷</h2>
+            <h2 class="section-title">Internship Experience</h2>
             <div class="timeline">
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2025年9月 – 現在</div>
-                        <div class="title">AI 軟體工程師 實習生</div>
-                        <div class="company">GoFreight, 台北</div>
-                        <div class="description">設計並實現自動化報告生成管道，使用 Django 和 Angular.js 構建定製化報告系統。</div>
+                        <div class="year">Sep 2025 – Present</div>
+                        <div class="title">AI Software Engineer Intern</div>
+                        <div class="company">GoFreight, Taipei</div>
+                        <div class="description">Designed and implemented an automated pipeline to generate customized reports built using Django and Angular.js.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">JavaScript</span>
@@ -924,11 +870,10 @@
                 </div>
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2025年7月 – 8月</div>
-                        <div class="title">AI 軟體工程師 實習生</div>
-                        <div class="company">Trend Micro, 台北</div>
-                        <div class="description">設計並實現檢測 MCP 毒害工具描述的分類器。開發檢測工作流，攔截並阻止 MCP 客戶端選擇的有害工具，確保更安全的自動化工具執行。
-                        </div>
+                        <div class="year">Jul – Aug 2025</div>
+                        <div class="title">AI Software Engineer Intern</div>
+                        <div class="company">Trend Micro, Taipei</div>
+                        <div class="description">Designed and implemented a classifier to detect malicious MCP poison tool descriptions. Developed a detection workflow that intercepts and blocks harmful tools when selected by the MCP client, ensuring safer automated tool execution.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">MCP</span>
@@ -941,11 +886,10 @@
                 </div>
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2025年3月 – 2026年3月</div>
-                        <div class="title">全棧工程師 實習生 (產學合作)</div>
-                        <div class="company">Bank SinoPac, 台北</div>
-                        <div class="description">開發員工績效評估系統，前端使用 React.js，後端使用 Django，資料庫為 PostgreSQL。設計並實現與 LLM
-                            整合的演算法，確保每位員工的評估報告獨特生成。</div>
+                        <div class="year">Mar 2025 – Mar 2026</div>
+                        <div class="title">Full Stack Engineer Intern (Industry-Academia Collaboration)</div>
+                        <div class="company">Bank SinoPac, Taipei</div>
+                        <div class="description">Developed an employee performance evaluation system using React.js for the frontend and Django for the backend, with PostgreSQL as the database. Designed and implemented an algorithm integrated with an LLM to ensure each employee's evaluation report is uniquely generated.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">JavaScript</span>
@@ -959,11 +903,10 @@
                 </div>
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2024年9月 – 2025年2月</div>
-                        <div class="title">GenAI 工程師 實習生</div>
-                        <div class="company">中華電信研究院, 台北</div>
-                        <div class="description">開發並整合 AutoGen 框架至客服系統，增強自動化和運營效率。將 Agent
-                            和檢索增強生成(RAG)整合為統一工作流，優化性能並降低流程複雜性。</div>
+                        <div class="year">Sep 2024 – Feb 2025</div>
+                        <div class="title">GenAI Engineer Intern</div>
+                        <div class="company">Chunghwa Telecom Laboratories, Taipei</div>
+                        <div class="description">Developed and integrated the Autogen framework for the customer service system, enhancing automation and operational efficiency. Consolidated Agent and Retrieval-Augmented Generation (RAG) into a unified workflow, optimizing performance and reducing process complexity.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">AutoGen</span>
@@ -976,11 +919,10 @@
                 </div>
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2024年7月 – 8月</div>
-                        <div class="title">GenAI 工程師 實習生</div>
-                        <div class="company">國泰聯合銀行, 台北</div>
-                        <div class="description">優化 RAG ETL
-                            流程，簡化資料提取、轉換和載入。整合向量資料庫與圖形資料庫，增強資料檢索能力。添加重新排序和糾正功能，提高搜尋結果的準確性和相關性。</div>
+                        <div class="year">Jul – Aug 2024</div>
+                        <div class="title">GenAI Engineer Intern</div>
+                        <div class="company">Cathay United Bank, Taipei</div>
+                        <div class="description">Optimized the RAG ETL process, streamlining data extraction, transformation, and loading for improved efficiency. Integrated Vector database with Graph database, enhancing data retrieval capabilities and complex query handling. Added reranking and corrective functionalities to RAG, improving the accuracy and relevance of search results.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">RAG</span>
@@ -996,17 +938,14 @@
 
         <!-- 研究經歷 -->
         <section id="research" class="glass-card">
-            <h2 class="section-title">研究經歷</h2>
+            <h2 class="section-title">Research Experience</h2>
             <div class="timeline">
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2025年6月 – 2026年6月</div>
-                        <div class="title">研究助理</div>
-                        <div class="company">國立政治大學 & 國立台灣大學</div>
-                        <div class="description">
-                            <strong>碳信用評估與合規驗證：探索碳足跡和成本效益最優化策略</strong><br>形式化碳信用監管框架為邏輯約束表示，探索法律合規條件下的最優碳交易策略。實現具有自我糾正能力的
-                            LLM 代理，自動生成、驗證和精化監管邏輯，顯著減少手動編碼工作量。
-                        </div>
+                        <div class="year">Jun 2025 – Jun 2026</div>
+                        <div class="title">Research Assistant</div>
+                        <div class="company">National Chengchi University & National Taiwan University</div>
+                        <div class="description"><strong>Carbon Credit Assessment and Compliance Verification: Exploring Carbon Footprint and Cost-Effectiveness Optimization Strategies</strong><br>Formalized carbon-credit regulatory frameworks into logical constraint representations and explored optimal carbon-trading strategies under legally compliant conditions. Implemented an LLM agent with self-correction capabilities to autonomously generate, verify, and refine regulatory logic, significantly reducing manual encoding effort.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">AutoGen</span>
@@ -1019,12 +958,10 @@
                 </div>
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2025年1月 – 12月</div>
-                        <div class="title">研究助理</div>
-                        <div class="company">國立政治大學 & 中華電信</div>
-                        <div class="description"><strong>AI 代理平台在投資分析報告生成研究中的應用</strong><br>應用形式方法與 LLM
-                            自我糾正工作流，將金管會(FSC)違規案件編碼為邏輯約束表示，通過最優化技術識別最小變更合規解決方案。開發互動式 UI 對話框架，使用戶能按需調整約束，在實際情況中保持解決方案靈活性。
-                        </div>
+                        <div class="year">Jan – Dec 2025</div>
+                        <div class="title">Research Assistant</div>
+                        <div class="company">National Chengchi University & Chunghwa Telecom</div>
+                        <div class="description"><strong>The Application of AI Agent Platform to the Study of Producing Investment Analysis Reports</strong><br>Applied formal methods combined with an LLM self-correction workflow to encode FSC (Financial Supervisory Commission) violation cases into logical constraint representations and identify minimally-changing compliant solutions through optimization techniques. Developed an interactive UI-based dialog framework that enables users to adjust constraints on demand.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">AutoGen</span>
@@ -1037,11 +974,10 @@
                 </div>
                 <div class="timeline-item">
                     <div class="content">
-                        <div class="year">2023年7月 – 9月</div>
-                        <div class="title">研究助理</div>
-                        <div class="company">國立成功大學, 台南</div>
-                        <div class="description">微調 LLaMA-7B 模型，使用 LoRA 在 PubMedQ&A 資料集上進行訓練。評估中達到 68% 準確率和 51% F1 分數。
-                        </div>
+                        <div class="year">Jul – Sep 2023</div>
+                        <div class="title">Research Assistant</div>
+                        <div class="company">National Cheng Kung University, Tainan</div>
+                        <div class="description">Fine-tuned the LLaMA-7B model using LoRA on the PubMedQ&A dataset. We achieved 68% accuracy and 51% F1 score during evaluation.</div>
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">LLM Fine-tuning</span>
@@ -1056,15 +992,14 @@
 
         <!-- 會議與發表 -->
         <section id="projects" class="glass-card">
-            <h2 class="section-title">會議與發表</h2>
+            <h2 class="section-title">Conferences & Publications</h2>
             <div class="projects">
                 <div class="glass-card">
                     <div class="project-image">📊</div>
                     <div class="project-info">
                         <div class="project-title">KDD 2025 ML in Finance Workshop</div>
                         <div class="project-type">📍 Toronto, Canada</div>
-                        <div class="project-description">口頭報告者 - "A Hybrid Framework for Financial Regulatory
-                            Compliance: Integrating LLMs and SMT Solvers for Automated Legal Analysis"</div>
+                        <div class="project-description">Oral Presenter - "A Hybrid Framework for Financial Regulatory Compliance: Integrating LLMs and SMT Solvers for Automated Legal Analysis"</div>
                     </div>
                 </div>
                 <div class="glass-card">
@@ -1072,17 +1007,15 @@
                     <div class="project-info">
                         <div class="project-title">2nd ACM International Conference on AI-powered Software</div>
                         <div class="project-type">📍 Seoul, South Korea | 🏅 ACM SIGSOFT Distinguished Paper Award</div>
-                        <div class="project-description">口頭報告者 - "Neuro-Symbolic Compliance: Integrating LLMs and SMT
-                            Solver for Automated Financial Legal Analysis"</div>
+                        <div class="project-description">Oral Presenter & Award Winner - "Neuro-Symbolic Compliance: Integrating LLMs and SMT Solver for Automated Financial Legal Analysis"</div>
                     </div>
                 </div>
                 <div class="glass-card">
                     <div class="project-image">📝</div>
                     <div class="project-info">
                         <div class="project-title">ACM Transactions on Software Engineering and Methodology</div>
-                        <div class="project-type">🔄 審查中 | 特刊 2025: Agentic AI in Software</div>
-                        <div class="project-description">"Architecting Optimized Legal Corrections: A Neuro-Symbolic
-                            Pipeline of Agentic AI Compliance"</div>
+                        <div class="project-type">🔄 Under Review | Special Issue 2025: Agentic AI in Software</div>
+                        <div class="project-description">"Architecting Optimized Legal Corrections: A Neuro-Symbolic Pipeline of Agentic AI Compliance"</div>
                     </div>
                 </div>
             </div>
@@ -1090,7 +1023,7 @@
 
         <!-- 聯絡資訊 -->
         <section id="contact" class="glass-card">
-            <h2 class="section-title">聯絡我</h2>
+            <h2 class="section-title">Get in Touch</h2>
             <div class="contact">
                 <div class="contact-info">
                     <div class="contact-item">
@@ -1103,10 +1036,10 @@
                     </div>
                     <div class="contact-item">
                         <div class="contact-icon">📍</div>
-                        <span>台灣</span>
+                        <span>Taiwan</span>
                     </div>
                 </div>
-                <h3>追蹤我的社群</h3>
+                <h3>Follow Me on Social</h3>
                 <div class="social-links">
                     <a href="https://github.com" class="social-icon" target="_blank" title="GitHub">🐙</a>
                     <a href="https://linkedin.com" class="social-icon" target="_blank" title="LinkedIn">💼</a>
@@ -1121,5 +1054,4 @@
         <p>&copy; 2024 Yung Shen (Vincent) HSIA. All rights reserved. | Built with ❤️ and Code</p>
     </footer>
 </body>
-
 </html>
