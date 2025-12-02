@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yung Shen (Vincent) HSIA - AI Engineer & ML Specialist</title>
+    <title>夏永紳(Vincent HSIA) - AI Engineer & ML Specialist</title>
     <style>
         * {
             margin: 0;
@@ -524,7 +524,7 @@
             margin-top: 15px;
             border-radius: 10px;
             overflow: hidden;
-            max-width: 250px;
+            max-width: 150px;
             height: auto;
             border: 2px solid rgba(0, 212, 255, 0.3);
             transition: all 0.3s ease;
@@ -541,12 +541,10 @@
             overflow: hidden;
             max-width: 180px;
             height: auto;
-            border: 2px solid rgba(255, 0, 110, 0.3);
             transition: all 0.3s ease;
         }
 
         .timeline-item .company-logo:hover {
-            border-color: rgba(255, 0, 110, 0.8);
             box-shadow: 0 0 15px rgba(255, 0, 110, 0.4);
         }
 
@@ -620,6 +618,12 @@
             font-size: 3em;
             border-radius: 15px 15px 0 0;
             overflow: hidden;
+        }
+
+        .project-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         .project-info {
@@ -958,6 +962,7 @@
                         <div class="title">AI 軟體工程師 實習生</div>
                         <div class="company">GoFreight, 台北</div>
                         <div class="description">設計並實現自動化報告生成管道，使用 Django 和 Angular.js 構建定製化報告系統。</div>
+                        <img src="pic/company/gofreight.png" alt="GoFreight" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">JavaScript</span>
@@ -993,7 +998,7 @@
                         <div class="company">Bank SinoPac, 台北</div>
                         <div class="description">開發員工績效評估系統，前端使用 React.js，後端使用 Django，資料庫為 PostgreSQL。設計並實現與 LLM
                             整合的演算法，確保每位員工的評估報告獨特生成。</div>
-                        <img src="pic/company/cathayBank.png" alt="Bank SinoPac" class="company-logo">
+                        <img src="pic/company/Sinopac.png" alt="Bank SinoPac" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">JavaScript</span>
@@ -1108,8 +1113,8 @@
         <section id="projects" class="glass-card">
             <h2 class="section-title">會議與發表</h2>
             <div class="projects">
-                <a href="research.html#kdd2025" class="glass-card project-link">
-                    <div class="project-image">📊</div>
+                <a href="conference-kdd2025.html" class="glass-card project-link">
+                    <div class="project-image"><img src="pic/conf/kdd_2025.png" alt="KDD 2025"></div>
                     <div class="project-info">
                         <div class="project-title">KDD 2025 ML in Finance Workshop</div>
                         <div class="project-type">📍 Toronto, Canada</div>
@@ -1120,8 +1125,8 @@
                         </div>
                     </div>
                 </a>
-                <a href="research.html" class="glass-card project-link">
-                    <div class="project-image">🏆</div>
+                <a href="conference-acm.html" class="glass-card project-link">
+                    <div class="project-image"><img src="pic/conf/aiware_2025.png" alt="AIWare 2025"></div>
                     <div class="project-info">
                         <div class="project-title">2nd ACM International Conference on AI-powered Software</div>
                         <div class="project-type">📍 Seoul, South Korea | 🏅 ACM SIGSOFT Distinguished Paper Award</div>
@@ -1132,8 +1137,8 @@
                         </div>
                     </div>
                 </a>
-                <a href="research.html" class="glass-card project-link">
-                    <div class="project-image">📝</div>
+                <a href="conference-tosem.html" class="glass-card project-link">
+                    <div class="project-image"><img src="pic/conf/acm.png" alt="ACM Transactions on Software Engineering and Methodology"></div>
                     <div class="project-info">
                         <div class="project-title">ACM Transactions on Software Engineering and Methodology</div>
                         <div class="project-type">🔄 審查中 | 特刊 2025: Agentic AI in Software</div>

@@ -473,7 +473,7 @@
             margin-top: 15px;
             border-radius: 10px;
             overflow: hidden;
-            max-width: 250px;
+            max-width: 150px;
             height: auto;
             border: 2px solid rgba(0, 212, 255, 0.3);
             transition: all 0.3s ease;
@@ -490,12 +490,10 @@
             overflow: hidden;
             max-width: 180px;
             height: auto;
-            border: 2px solid rgba(255, 0, 110, 0.3);
             transition: all 0.3s ease;
         }
 
         .timeline-item .company-logo:hover {
-            border-color: rgba(255, 0, 110, 0.8);
             box-shadow: 0 0 15px rgba(255, 0, 110, 0.4);
         }
 
@@ -555,6 +553,12 @@
             font-size: 3em;
             border-radius: 15px 15px 0 0;
             overflow: hidden;
+        }
+
+        .project-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         .project-info {
@@ -890,6 +894,7 @@
                         <div class="title">AI Software Engineer Intern</div>
                         <div class="company">GoFreight, Taipei</div>
                         <div class="description">Designed and implemented an automated pipeline to generate customized reports built using Django and Angular.js.</div>
+                        <img src="pic/company/gofreight.png" alt="GoFreight" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">JavaScript</span>
@@ -923,7 +928,7 @@
                         <div class="title">Full Stack Engineer Intern (Industry-Academia Collaboration)</div>
                         <div class="company">Bank SinoPac, Taipei</div>
                         <div class="description">Developed an employee performance evaluation system using React.js for the frontend and Django for the backend, with PostgreSQL as the database. Designed and implemented an algorithm integrated with an LLM to ensure each employee's evaluation report is uniquely generated.</div>
-                        <img src="pic/company/cathayBank.png" alt="Bank SinoPac" class="company-logo">
+                        <img src="pic/company/Sinopac.png" alt="Bank SinoPac" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">JavaScript</span>
@@ -1030,8 +1035,8 @@
         <section id="projects" class="glass-card">
             <h2 class="section-title">Conferences & Publications</h2>
             <div class="projects">
-                <a href="research-en.html#kdd2025" class="glass-card project-link">
-                    <div class="project-image">📊</div>
+                <a href="conference-kdd2025-en.html" class="glass-card project-link">
+                    <div class="project-image"><img src="pic/conf/kdd_2025.png" alt="KDD 2025"></div>
                     <div class="project-info">
                         <div class="project-title">KDD 2025 ML in Finance Workshop</div>
                         <div class="project-type">📍 Toronto, Canada</div>
@@ -1041,8 +1046,8 @@
                         </div>
                     </div>
                 </a>
-                <a href="research-en.html" class="glass-card project-link">
-                    <div class="project-image">🏆</div>
+                <a href="conference-acm-en.html" class="glass-card project-link">
+                    <div class="project-image"><img src="pic/conf/aiware_2025.png" alt="AIWare 2025"></div>
                     <div class="project-info">
                         <div class="project-title">2nd ACM International Conference on AI-powered Software</div>
                         <div class="project-type">📍 Seoul, South Korea | 🏅 ACM SIGSOFT Distinguished Paper Award</div>
@@ -1052,8 +1057,8 @@
                         </div>
                     </div>
                 </a>
-                <a href="research-en.html" class="glass-card project-link">
-                    <div class="project-image">📝</div>
+                <a href="conference-tosem-en.html" class="glass-card project-link">
+                    <div class="project-image"><img src="pic/conf/acm.png" alt="ACM Transactions on Software Engineering and Methodology"></div>
                     <div class="project-info">
                         <div class="project-title">ACM Transactions on Software Engineering and Methodology</div>
                         <div class="project-type">🔄 Under Review | Special Issue 2025: Agentic AI in Software</div>
