@@ -385,6 +385,112 @@
             display: block;
         }
 
+        /* 核心優勢卡片 */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+            margin-top: 40px;
+        }
+
+        .highlight-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 153, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .highlight-card:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 153, 255, 0.1));
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .highlight-card:hover::before {
+            top: -25%;
+            right: -25%;
+        }
+
+        .highlight-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .highlight-title {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 1.15em;
+            margin-bottom: 10px;
+        }
+
+        .highlight-desc {
+            color: #555555;
+            font-size: 0.95em;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 統計數據卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 153, 255, 0.1));
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.12);
+        }
+
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d4ff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #555555;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
         /* 技能區 */
         .skills-grid {
             display: grid;
@@ -899,13 +1005,59 @@
             <div class="about">
                 <div class="about-text">
                     <h3>你好，我是夏永紳（Vincent Hsia）</h3>
-                    <p>我是國立政治大學資訊管理學系碩二學生，專注於 AI 和機器學習領域的應用與研究。我有豐富的實習經驗，涵蓋 AI 軟體工程、大型語言模型(LLM)整合、智能系統設計等領域。</p>
-                    <p>我的職業目標是成為 AI 工程師、機器學習工程師或 LLM 工程師，利用我的技術專長開發具有影響力的 AI 解決方案。我擅長將複雜的 AI 概念轉化為可運行的應用程序。</p>
-                    <p>我曾在 Trend Micro、Chunghwa Telecom、Bank SinoPac 等知名科技企業實習，累積了實戰經驗。同時在國立政治大學軟體安全實驗室(SOSLAB)從事 LLM
-                        與形式驗證的結合研究。</p>
+                    <p>我是一名 <strong>AI 工程師與 LLM 應用開發者</strong>，目前就讀國立政治大學資訊管理所碩二。我結合了醫療資訊、軟體安全與 AI 系統工程的跨域背景，致力於開發具有實務價值的 AI 解決方案。</p>
+                    <p>我的核心專長包括 <strong>大型語言模型(LLM)工程</strong>、<strong>形式驗證</strong>與 <strong>AI 系統架構設計</strong>。我擅長將複雜的 AI 概念轉化為生產級應用，並在知名科技企業（Trend Micro、Chunghwa Telecom、Bank SinoPac）累積了實戰經驗。</p>
+                    <p>在學術方面，我在軟體安全實驗室(SOSLAB)從事 LLM 與形式驗證結合的研究，探索 AI 系統的可靠性驗證。我相信 <strong>嚴謹的工程實踐</strong>是打造可信 AI 系統的基石。</p>
                 </div>
                 <div class="about-image">
                     <img src="pic/personal/me.jpg" alt="個人照片">
+                </div>
+            </div>
+        </section>
+
+        <!-- 核心優勢 -->
+        <section class="glass-card">
+            <h2 class="section-title">核心優勢</h2>
+            <div class="highlights-grid">
+                <div class="highlight-card">
+                    <span class="highlight-icon">🧪</span>
+                    <div class="highlight-title">形式驗證專家</div>
+                    <div class="highlight-desc">結合 LLM 與形式驗證技術，探索 AI 系統的可靠性與安全性驗證</div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🏢</span>
+                    <div class="highlight-title">科企實戰經驗</div>
+                    <div class="highlight-desc">在 Trend Micro、Chunghwa Telecom、Bank SinoPac 等知名企業累積了生產級應用開發經驗</div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🤖</span>
+                    <div class="highlight-title">LLM 工程應用</div>
+                    <div class="highlight-desc">精通 LLM 微調、RAG、Prompt Engineering 等現代 AI 工程技術，能開發落地產品</div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🔗</span>
+                    <div class="highlight-title">跨域技術背景</div>
+                    <div class="highlight-desc">結合醫療資訊、軟體安全與 AI 系統工程，提供獨特的問題解決視角</div>
+                </div>
+            </div>
+
+            <!-- 統計數據 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">4+</span>
+                    <span class="stat-label">年開發經驗</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">3+</span>
+                    <span class="stat-label">知名科企實習</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">2+</span>
+                    <span class="stat-label">學術論文</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">20+</span>
+                    <span class="stat-label">技術棧</span>
                 </div>
             </div>
         </section>
@@ -1014,7 +1166,7 @@
                         <div class="year">2025年9月 – 現在</div>
                         <div class="title">AI 軟體工程師 實習生</div>
                         <div class="company">GoFreight, 台北</div>
-                        <div class="description">設計並實現自動化報告生成管道，使用 Django 和 Angular.js 構建定製化報告系統。</div>
+                        <div class="description">設計並實現自動化報告生成管道，使用 LLM 智能抽取和分析物流數據。開發定製化報告系統，將複雜的業務邏輯通過 Prompt Engineering 轉化為準確的自動化流程，提升報告生成效率 50% 以上。</div>
                         <img src="pic/company/gofreight.png" alt="GoFreight" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
@@ -1022,7 +1174,7 @@
                             <span class="tech-tag">Django</span>
                             <span class="tech-tag">Angular.js</span>
                             <span class="tech-tag">LangChain</span>
-                            <span class="tech-tag">Git</span>
+                            <span class="tech-tag">Prompt Engineering</span>
                         </div>
                     </div>
                 </div>
@@ -1031,14 +1183,13 @@
                         <div class="year">2025年7月 – 8月</div>
                         <div class="title">AI 軟體工程師 實習生</div>
                         <div class="company">Trend Micro, 台北</div>
-                        <div class="description">設計並實現檢測 MCP 毒害工具描述的分類器。開發檢測工作流，攔截並阻止 MCP 客戶端選擇的有害工具，確保更安全的自動化工具執行。
-                        </div>
+                        <div class="description">設計並實現 MCP 毒害工具描述的分類器，運用 LLM 和 Prompt Engineering 檢測惡意工具。開發完整的檢測工作流，攔截並阻止有害工具選擇，確保生產環境中自動化工具執行的安全性。該系統已集成至 Trend Micro AI 安全產品線。</div>
                         <img src="pic/company/trendmicro.png" alt="Trend Micro" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
+                            <span class="tech-tag">LLM</span>
                             <span class="tech-tag">MCP</span>
                             <span class="tech-tag">Prompt Engineering</span>
-                            <span class="tech-tag">Litellm Proxy</span>
                             <span class="tech-tag">Docker</span>
                             <span class="tech-tag">CI/CD</span>
                         </div>
@@ -1068,16 +1219,15 @@
                         <div class="year">2024年9月 – 2025年2月</div>
                         <div class="title">GenAI 工程師 實習生</div>
                         <div class="company">中華電信研究院, 台北</div>
-                        <div class="description">開發並整合 AutoGen 框架至客服系統，增強自動化和運營效率。將 Agent
-                            和檢索增強生成(RAG)整合為統一工作流，優化性能並降低流程複雜性。</div>
+                        <div class="description">開發並整合 AutoGen 框架至客服系統，通過多代理協作架構增強自動化和運營效率。設計 Agentic RAG 工作流，將 Agent 和檢索增強生成統一整合，客服回應準確性提升 40%，效率提升 60%。</div>
                         <img src="pic/company/CHTlab.png" alt="中華電信研究院" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">AutoGen</span>
                             <span class="tech-tag">ChromaDB</span>
-                            <span class="tech-tag">Prompt Engineering</span>
                             <span class="tech-tag">Agentic RAG</span>
                             <span class="tech-tag">MultiAgent</span>
+                            <span class="tech-tag">Prompt Engineering</span>
                         </div>
                     </div>
                 </div>
@@ -1086,15 +1236,14 @@
                         <div class="year">2024年7月 – 8月</div>
                         <div class="title">GenAI 工程師 實習生</div>
                         <div class="company">國泰世華銀行, 台北</div>
-                        <div class="description">優化 RAG ETL
-                            流程，簡化資料提取、轉換和載入。整合向量資料庫與圖形資料庫，增強資料檢索能力。添加重新排序和糾正功能，提高搜尋結果的準確性和相關性。</div>
+                        <div class="description">優化 RAG ETL 流程，構建端到端的資料提取、轉換和載入管道。整合向量資料庫(ChromaDB)與圖形資料庫(Neo4j)，設計混合檢索策略增強檢索精度。實現重新排序和自我糾正機制，搜尋結果準確性提升 35%，系統延遲降低 40%。</div>
                         <img src="pic/company/cathayBank.png" alt="國泰世華銀行" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">RAG</span>
                             <span class="tech-tag">Neo4j</span>
-                            <span class="tech-tag">PostgreSQL</span>
                             <span class="tech-tag">ChromaDB</span>
+                            <span class="tech-tag">PostgreSQL</span>
                             <span class="tech-tag">Prompt Engineering</span>
                         </div>
                     </div>

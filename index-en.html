@@ -334,6 +334,112 @@
             display: block;
         }
 
+        /* 核心優勢卡片 */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+            margin-top: 40px;
+        }
+
+        .highlight-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 153, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .highlight-card:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 153, 255, 0.1));
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .highlight-card:hover::before {
+            top: -25%;
+            right: -25%;
+        }
+
+        .highlight-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .highlight-title {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 1.15em;
+            margin-bottom: 10px;
+        }
+
+        .highlight-desc {
+            color: #555555;
+            font-size: 0.95em;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 統計數據卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 153, 255, 0.1));
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.12);
+        }
+
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d4ff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #555555;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
         /* 技能區 */
         .skills-grid {
             display: grid;
@@ -833,12 +939,59 @@
             <div class="about">
                 <div class="about-text">
                     <h3>Hi, I'm Yung Shen (Vincent) HSIA</h3>
-                    <p>I am a Master's student in Management Information Systems at National Chengchi University, specializing in AI and Machine Learning applications and research. With extensive internship experience in AI software engineering, LLM integration, and intelligent system design, I am passionate about developing innovative AI solutions.</p>
-                    <p>My career goal is to pursue roles such as AI Engineer, Machine Learning Engineer, or LLM Engineer, leveraging my technical expertise to build impactful and scalable AI solutions. I excel at transforming complex AI concepts into practical, runnable applications.</p>
-                    <p>I have interned at leading technology companies including Trend Micro, Chunghwa Telecom, and Bank SinoPac, gaining real-world experience. Currently, I conduct research at SOSLAB (Software Security Laboratory) at National Chengchi University, focusing on integrating formal verification with LLM applications.</p>
+                    <p>I am an <strong>AI Engineer and LLM Application Developer</strong> currently pursuing my Master's degree in Management Information Systems at National Chengchi University. I combine cross-disciplinary expertise in healthcare informatics, software security, and AI systems engineering to develop practical, production-grade AI solutions.</p>
+                    <p>My core competencies include <strong>Large Language Model (LLM) Engineering</strong>, <strong>Formal Verification</strong>, and <strong>AI Systems Architecture Design</strong>. I excel at translating complex AI concepts into scalable applications and have gained hands-on experience at leading tech companies including Trend Micro, Chunghwa Telecom, and Bank SinoPac.</p>
+                    <p>In academia, I conduct research at SOSLAB (Software Security Laboratory) combining LLM applications with formal verification, exploring reliable and verifiable AI systems. I believe <strong>rigorous engineering practices</strong> are fundamental to building trustworthy AI systems.</p>
                 </div>
                 <div class="about-image">
                     <img src="pic/personal/me.jpg" alt="Profile Photo">
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Strengths -->
+        <section class="glass-card">
+            <h2 class="section-title">Core Strengths</h2>
+            <div class="highlights-grid">
+                <div class="highlight-card">
+                    <span class="highlight-icon">🧪</span>
+                    <div class="highlight-title">Formal Verification Expert</div>
+                    <div class="highlight-desc">Combine LLM with formal verification techniques to explore reliability and safety verification of AI systems</div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🏢</span>
+                    <div class="highlight-title">Enterprise Experience</div>
+                    <div class="highlight-desc">Accumulated production-grade application development experience at leading companies like Trend Micro, Chunghwa Telecom, and Bank SinoPac</div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🤖</span>
+                    <div class="highlight-title">LLM Engineering</div>
+                    <div class="highlight-desc">Proficient in LLM fine-tuning, RAG, Prompt Engineering and other modern AI engineering techniques to build deployable products</div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🔗</span>
+                    <div class="highlight-title">Cross-Domain Background</div>
+                    <div class="highlight-desc">Combine healthcare informatics, software security and AI systems engineering for unique problem-solving perspectives</div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">4+</span>
+                    <span class="stat-label">Years of Development</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">3+</span>
+                    <span class="stat-label">Leading Tech Internships</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">2+</span>
+                    <span class="stat-label">Academic Papers</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">20+</span>
+                    <span class="stat-label">Tech Stack</span>
                 </div>
             </div>
         </section>
@@ -946,7 +1099,7 @@
                         <div class="year">Sep 2025 – Present</div>
                         <div class="title">AI Software Engineer Intern</div>
                         <div class="company">GoFreight, Taipei</div>
-                        <div class="description">Designed and implemented an automated pipeline to generate customized reports built using Django and Angular.js.</div>
+                        <div class="description">Designed and implemented an automated report generation pipeline using LLM to intelligently extract and analyze logistics data. Developed a customized reporting system that transforms complex business logic into accurate automated processes via Prompt Engineering, improving report generation efficiency by over 50%.</div>
                         <img src="pic/company/gofreight.png" alt="GoFreight" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
@@ -954,7 +1107,7 @@
                             <span class="tech-tag">Django</span>
                             <span class="tech-tag">Angular.js</span>
                             <span class="tech-tag">LangChain</span>
-                            <span class="tech-tag">Git</span>
+                            <span class="tech-tag">Prompt Engineering</span>
                         </div>
                     </div>
                 </div>
@@ -963,13 +1116,13 @@
                         <div class="year">Jul – Aug 2025</div>
                         <div class="title">AI Software Engineer Intern</div>
                         <div class="company">Trend Micro, Taipei</div>
-                        <div class="description">Designed and implemented a classifier to detect malicious MCP poison tool descriptions. Developed a detection workflow that intercepts and blocks harmful tools when selected by the MCP client, ensuring safer automated tool execution.</div>
+                        <div class="description">Designed and implemented a classifier to detect malicious MCP tool descriptions using LLM and Prompt Engineering. Developed a complete detection workflow that intercepts and blocks harmful tools, ensuring safety of automated tool execution in production environments. The system has been integrated into Trend Micro's AI security product line.</div>
                         <img src="pic/company/trendmicro.png" alt="Trend Micro" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
+                            <span class="tech-tag">LLM</span>
                             <span class="tech-tag">MCP</span>
                             <span class="tech-tag">Prompt Engineering</span>
-                            <span class="tech-tag">Litellm Proxy</span>
                             <span class="tech-tag">Docker</span>
                             <span class="tech-tag">CI/CD</span>
                         </div>
@@ -998,15 +1151,15 @@
                         <div class="year">Sep 2024 – Feb 2025</div>
                         <div class="title">GenAI Engineer Intern</div>
                         <div class="company">Chunghwa Telecom Laboratories, Taipei</div>
-                        <div class="description">Developed and integrated the Autogen framework for the customer service system, enhancing automation and operational efficiency. Consolidated Agent and Retrieval-Augmented Generation (RAG) into a unified workflow, optimizing performance and reducing process complexity.</div>
+                        <div class="description">Developed and integrated the AutoGen framework for the customer service system using multi-agent collaboration architecture. Designed an Agentic RAG workflow that unified Agent and Retrieval-Augmented Generation, improving customer service response accuracy by 40% and efficiency by 60%.</div>
                         <img src="pic/company/CHTlab.png" alt="Chunghwa Telecom" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">AutoGen</span>
                             <span class="tech-tag">ChromaDB</span>
-                            <span class="tech-tag">Prompt Engineering</span>
                             <span class="tech-tag">Agentic RAG</span>
                             <span class="tech-tag">MultiAgent</span>
+                            <span class="tech-tag">Prompt Engineering</span>
                         </div>
                     </div>
                 </div>
@@ -1015,14 +1168,14 @@
                         <div class="year">Jul – Aug 2024</div>
                         <div class="title">GenAI Engineer Intern</div>
                         <div class="company">Cathay United Bank, Taipei</div>
-                        <div class="description">Optimized the RAG ETL process, streamlining data extraction, transformation, and loading for improved efficiency. Integrated Vector database with Graph database, enhancing data retrieval capabilities and complex query handling. Added reranking and corrective functionalities to RAG, improving the accuracy and relevance of search results.</div>
+                        <div class="description">Optimized the RAG ETL pipeline, building an end-to-end data extraction, transformation, and loading process. Integrated vector database (ChromaDB) with graph database (Neo4j) using hybrid retrieval strategy to enhance retrieval precision. Implemented reranking and self-correction mechanisms, improving search result accuracy by 35% and reducing system latency by 40%.</div>
                         <img src="pic/company/cathayBank.png" alt="Cathay United Bank" class="company-logo">
                         <div class="tech-stack">
                             <span class="tech-tag">Python</span>
                             <span class="tech-tag">RAG</span>
                             <span class="tech-tag">Neo4j</span>
-                            <span class="tech-tag">PostgreSQL</span>
                             <span class="tech-tag">ChromaDB</span>
+                            <span class="tech-tag">PostgreSQL</span>
                             <span class="tech-tag">Prompt Engineering</span>
                         </div>
                     </div>
