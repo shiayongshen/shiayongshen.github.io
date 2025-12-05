@@ -13,10 +13,10 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f2e 0%, #16213e 25%, #0f3460 50%, #16213e 75%, #0f0f2e 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 25%, #f0f4f8 50%, #e8eef5 75%, #f5f7fa 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
-            color: #e0e0e0;
+            color: #2c3e50;
             overflow-x: hidden;
             min-height: 100vh;
         }
@@ -48,20 +48,20 @@
 
         /* 玻璃形態效果 */
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
             border-radius: 20px;
             padding: 30px;
             margin: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.1);
             transition: all 0.3s ease;
         }
 
         .glass-card:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.95);
             border-color: rgba(0, 212, 255, 0.5);
-            box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.15);
             transform: translateY(-5px);
         }
 
@@ -76,13 +76,13 @@
         nav {
             position: sticky;
             top: 0;
-            background: rgba(15, 15, 46, 0.9);
+            background: rgba(245, 247, 250, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            border-bottom: 1px solid rgba(0, 153, 255, 0.15);
             padding: 20px 0;
             margin-bottom: 40px;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 153, 255, 0.05);
         }
 
         nav .container {
@@ -113,7 +113,7 @@
         }
 
         nav .back-btn {
-            color: #00d4ff;
+            color: #0099ff;
             text-decoration: none;
             transition: all 0.3s ease;
             font-size: 1.1em;
@@ -145,7 +145,7 @@
         }
 
         .page-title .institution {
-            color: #00d4ff;
+            color: #0099ff;
             font-size: 1em;
         }
 
@@ -156,15 +156,15 @@
 
         .section-title {
             font-size: 1.8em;
-            color: #00d4ff;
+            color: #0099ff;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            border-bottom: 2px solid rgba(0, 153, 255, 0.3);
         }
 
         .abstract {
             line-height: 1.8;
-            color: #c0c0c0;
+            color: #555555;
             font-size: 1.05em;
         }
 
@@ -189,26 +189,26 @@
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #00d4ff, #0099ff);
-            color: #0f0f2e;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            background: linear-gradient(45deg, #0099ff, #0077cc);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 153, 255, 0.3);
         }
 
         .btn-primary:hover {
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+            box-shadow: 0 0 30px rgba(0, 153, 255, 0.5);
             transform: translateY(-2px);
         }
 
         .btn-secondary {
             background: transparent;
-            color: #00d4ff;
-            border: 2px solid #00d4ff;
-            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.1);
+            color: #0099ff;
+            border: 2px solid #0099ff;
+            box-shadow: inset 0 0 20px rgba(0, 153, 255, 0.05);
         }
 
         .btn-secondary:hover {
-            background: rgba(0, 212, 255, 0.1);
-            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.2), 0 0 20px rgba(0, 212, 255, 0.3);
+            background: rgba(0, 153, 255, 0.1);
+            box-shadow: inset 0 0 20px rgba(0, 153, 255, 0.15), 0 0 20px rgba(0, 153, 255, 0.2);
         }
 
         /* 技術標籤 */
@@ -240,11 +240,11 @@
 
         .publication-details p {
             margin-bottom: 10px;
-            color: #b0b0b0;
+            color: #555555;
         }
 
         .publication-details strong {
-            color: #00d4ff;
+            color: #0099ff;
         }
 
         /* 返回按鈕 */
@@ -252,16 +252,16 @@
             display: inline-block;
             margin-top: 40px;
             padding: 12px 25px;
-            background: rgba(0, 212, 255, 0.2);
-            color: #00d4ff;
+            background: rgba(0, 153, 255, 0.15);
+            color: #0099ff;
             text-decoration: none;
             border-radius: 25px;
-            border: 1px solid rgba(0, 212, 255, 0.5);
+            border: 1px solid rgba(0, 153, 255, 0.5);
             transition: all 0.3s ease;
         }
 
         .back-to-home:hover {
-            background: rgba(0, 212, 255, 0.3);
+            background: rgba(0, 153, 255, 0.25);
             transform: translateX(-5px);
         }
 
@@ -269,8 +269,8 @@
         footer {
             text-align: center;
             padding: 30px;
-            border-top: 1px solid rgba(0, 212, 255, 0.2);
-            color: #808080;
+            border-top: 1px solid rgba(0, 153, 255, 0.15);
+            color: #999999;
             font-size: 0.95em;
             margin-top: 60px;
         }
@@ -339,8 +339,8 @@
             <div class="content-section">
                 <h2 class="section-title">📋 摘要 (Abstract)</h2>
                 <div class="abstract">
-                    <p>本論文呈現了一個基於代理 AI 和符號推理的創新架構，用於自動化合規性糾正和優化。我們構建了一個多代理系統，其中每個代理專門負責特定的合規性層面，通過協作來識別和修正法律違規。</p>
-                    <p style="margin-top: 15px;">該系統的核心創新是實現了一個自適應的糾正管道，能夠在多個約束條件下生成最小變更的合規方案。我們使用 SMT 求解器來確保所有生成的方案都符合法律要求，同時保持實際可行性。該研究目前正在 TOSEM 期刊的「代理 AI 在軟體中的應用」特刊中進行同行評審。</p>
+                    <p>具有自主推理和工具使用能力的代理 AI 系統對法律合規性和問責制構成了新的挑戰。本論文提出了一個神經符號合規管道，整合大型語言模型(LLM)推理與滿足性模理論(SMT)求解，以執行<strong>優化法律糾正</strong>——恢復合規性同時保留法定和運營約束的系統性調整。通過多代理架構，系統自動化法律文本解析、約束綜合和求解器引導的自我修復，將 SMT 反饋納入 LLM 提示以進行迭代糾正。</p>
+                    <p style="margin-top: 15px;">在台灣金融監督管理委員會 479 個金融執法案例上進行評估，該框架達到了 99.79% 的形式驗證率，並展示了神經解釋和符號驗證的互補優勢。雖然獨立的 LLM 達到 72.0% 的可行性準確度和 15.14% 的合規生成成功率，混合方法為可解釋的法律推理提供了可擴展、可驗證的基礎。</p>
                 </div>
             </div>
 
@@ -349,7 +349,7 @@
                 <div class="publication-details">
                     <p><strong>期刊：</strong> ACM Transactions on Software Engineering and Methodology (TOSEM)</p>
                     <p><strong>特刊：</strong> Special Issue 2025: Agentic AI in Software</p>
-                    <p><strong>狀態：</strong> 🔄 Under Review (第二輪評審)</p>
+                    <p><strong>狀態：</strong> 🔄 Under Review (第一輪評審)</p>
                     <p><strong>預期發佈：</strong> 2025 年第二季度</p>
                 </div>
             </div>

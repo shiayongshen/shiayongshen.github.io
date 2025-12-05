@@ -12,11 +12,9 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f2e 0%, #16213e 25%, #0f3460 50%, #16213e 75%, #0f0f2e 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
-            color: #e0e0e0;
+            color: #2c3e50;
             overflow-x: hidden;
             min-height: 100vh;
         }
@@ -48,19 +46,19 @@
 
         /* 玻璃形態效果 */
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
             border-radius: 20px;
             padding: 30px;
             margin: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.1);
             transition: all 0.3s ease;
         }
 
         .glass-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(0, 212, 255, 0.5);
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(0, 212, 255, 0.4);
             box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.2);
             transform: translateY(-5px);
         }
@@ -76,13 +74,13 @@
         nav {
             position: sticky;
             top: 0;
-            background: rgba(15, 15, 46, 0.9);
+            background: rgba(245, 247, 250, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.15);
             padding: 20px 0;
             margin-bottom: 40px;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.05);
         }
 
         nav .container {
@@ -113,7 +111,7 @@
         }
 
         nav .back-btn {
-            color: #00d4ff;
+            color: #0099ff;
             text-decoration: none;
             transition: all 0.3s ease;
             font-size: 1.1em;
@@ -145,7 +143,7 @@
         }
 
         .page-title .institution {
-            color: #00d4ff;
+            color: #0099ff;
             font-size: 1em;
         }
 
@@ -156,7 +154,7 @@
 
         .section-title {
             font-size: 1.8em;
-            color: #00d4ff;
+            color: #0099ff;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid rgba(0, 212, 255, 0.3);
@@ -164,8 +162,30 @@
 
         .abstract {
             line-height: 1.8;
-            color: #c0c0c0;
+            color: #555555;
             font-size: 1.05em;
+        }
+
+        /* PDF 預覽容器 */
+        .pdf-preview-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .pdf-preview-container h3 {
+            color: #0099ff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.15);
         }
 
         /* 連結按鈕 */
@@ -189,26 +209,26 @@
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #00d4ff, #0099ff);
-            color: #0f0f2e;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            background: linear-gradient(45deg, #0099ff, #0080ff);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 153, 255, 0.4);
         }
 
         .btn-primary:hover {
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+            box-shadow: 0 0 30px rgba(0, 153, 255, 0.6);
             transform: translateY(-2px);
         }
 
         .btn-secondary {
             background: transparent;
-            color: #00d4ff;
-            border: 2px solid #00d4ff;
-            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.1);
+            color: #0099ff;
+            border: 2px solid #0099ff;
+            box-shadow: inset 0 0 20px rgba(0, 153, 255, 0.1);
         }
 
         .btn-secondary:hover {
-            background: rgba(0, 212, 255, 0.1);
-            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.2), 0 0 20px rgba(0, 212, 255, 0.3);
+            background: rgba(0, 153, 255, 0.1);
+            box-shadow: inset 0 0 20px rgba(0, 153, 255, 0.2), 0 0 20px rgba(0, 153, 255, 0.3);
         }
 
         /* 技術標籤 */
@@ -269,8 +289,8 @@
 
         /* 發表詳情 */
         .publication-details {
-            background: rgba(0, 212, 255, 0.05);
-            border-left: 3px solid #00d4ff;
+            background: rgba(0, 153, 255, 0.05);
+            border-left: 3px solid #0099ff;
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
@@ -278,11 +298,11 @@
 
         .publication-details p {
             margin-bottom: 10px;
-            color: #b0b0b0;
+            color: #555555;
         }
 
         .publication-details strong {
-            color: #00d4ff;
+            color: #0099ff;
         }
 
         /* 返回按鈕 */
@@ -290,16 +310,16 @@
             display: inline-block;
             margin-top: 40px;
             padding: 12px 25px;
-            background: rgba(0, 212, 255, 0.2);
-            color: #00d4ff;
+            background: rgba(0, 153, 255, 0.15);
+            color: #0099ff;
             text-decoration: none;
             border-radius: 25px;
-            border: 1px solid rgba(0, 212, 255, 0.5);
+            border: 1px solid rgba(0, 153, 255, 0.5);
             transition: all 0.3s ease;
         }
 
         .back-to-home:hover {
-            background: rgba(0, 212, 255, 0.3);
+            background: rgba(0, 153, 255, 0.25);
             transform: translateX(-5px);
         }
 
@@ -307,8 +327,8 @@
         footer {
             text-align: center;
             padding: 30px;
-            border-top: 1px solid rgba(0, 212, 255, 0.2);
-            color: #808080;
+            border-top: 1px solid rgba(0, 153, 255, 0.15);
+            color: #999999;
             font-size: 0.95em;
             margin-top: 60px;
         }
@@ -377,8 +397,9 @@
             <div class="content-section">
                 <h2 class="section-title">📋 摘要 (Abstract)</h2>
                 <div class="abstract">
-                    <p>本研究提出一個混合框架，將大型語言模型(LLM)與 SMT 求解器整合，以實現財務監管合規性的自動化法律分析。我們的方法涵蓋金融監管框架的形式化表示，利用 LLM 的自然語言理解能力和 SMT 求解器的邏輯推理能力，實現更準確和高效的合規性驗證。</p>
-                    <p style="margin-top: 15px;">通過在實際金融案例上的應用，我們展示了該框架在識別監管違規、提出最小變更的合規方案方面的有效性。這項工作代表了符號 AI 和神經 AI 的成功結合，為金融科技和法律科技領域開辟了新的可能性。</p>
+                    <p>本研究提出一個混合框架，結合大型語言模型(LLM)與滿足性模理論(SMT)求解器，用於金融監管領域的自動化法律分析。系統特別針對台灣法律環境設計，整合檢索增強生成(RAG)管道以存取法定參考、歷史執法案例和金融監督管理委員會(FSC)的企業違規記錄。利用 Python 工具(包括 Z3 和 OpenAI API)，框架支援案例相似度評估、監管約束檢查和基於約束的形式推理進行場景模擬。</p>
+                    <p style="margin-top: 15px;">代理通過為金融合規量身定制的思維鏈提示方法模擬法律專家分析，識別潛在違規、解釋適用法律條款，並生成與法定要求相符的糾正建議。通過區分硬約束(法律)和軟約束(案例特定事實)，系統實現最小法律修正和使用影響圓錐分析的迭代驗證。基於 Gradio 的互動界面允許用戶實時探索合規評估。</p>
+                    <p style="margin-top: 15px;">在 87 個 FSC 發布的罰款案例上的實驗評估顯示，提議的 LLM+SMT 混合系統在識別非法條款、生成準確糾正和提供可解釋推理輸出方面顯著優於純 LLM 基線——在約束滿足任務中實現超過 300 倍的加速和完美準確度。這項工作為金融治理中 AI 增強法律推理的未來應用奠定了基礎，為自動化合規診斷提供了透明、可定制和符合法規的工具。</p>
                 </div>
             </div>
 
@@ -398,22 +419,34 @@
             <div class="content-section">
                 <h2 class="section-title">📚 發表與連結</h2>
                 <div class="link-buttons">
-                    <a href="https://kdd.org" target="_blank" class="btn btn-primary">📖 查看會議</a>
-                    <a href="#" target="_blank" class="btn btn-secondary">📄 預印本論文</a>
+                    <a href="https://sites.google.com/view/kdd-mlf-2025/" target="_blank" class="btn btn-primary">🌐 會議官網</a>
+                    <a href="conf_material/KDD/KDD_preprint.pdf" target="_blank" class="btn btn-secondary">📄 論文原文</a>
+                    <a href="conf_material/KDD/KDD_powerpoint.pdf" target="_blank" class="btn btn-secondary">🎤 報告簡報</a>
                 </div>
             </div>
 
+            
+
             <div class="content-section">
-                <h2 class="section-title">📸 會議照片</h2>
+                <h2 class="section-title">📷 會議照片</h2>
                 <div class="gallery">
                     <div class="gallery-item">
-                        <img src="pic/conf/kdd_2025.png" alt="KDD 2025 Logo">
+                        <img src="pic/conf/KDD/KDD 1.jpg" alt="KDD Conference Photo 1">
                     </div>
                     <div class="gallery-item">
-                        <img src="pic/personal/me.jpg" alt="Conference Photo">
+                        <img src="pic/conf/KDD/KDD 2.jpg" alt="KDD Conference Photo 2">
                     </div>
                     <div class="gallery-item">
-                        <div class="gallery-placeholder">🎤</div>
+                        <img src="pic/conf/KDD/Kdd 3.jpg" alt="KDD Conference Photo 3">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="pic/conf/KDD/KDD4.jpg" alt="KDD Conference Photo 4">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="pic/conf/KDD/KDD5.jpg" alt="KDD Conference Photo 5">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="pic/conf/KDD/KDD6.jpg" alt="KDD Conference Photo 6">
                     </div>
                 </div>
             </div>
