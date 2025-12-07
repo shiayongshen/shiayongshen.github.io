@@ -1,0 +1,346 @@
+/* ==================== 共用全域樣式 ==================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ==================== 色彩主題 ==================== */
+:root {
+    --primary-cyan: #00d4ff;
+    --primary-blue: #0099ff;
+    --primary-pink: #ff006e;
+    --light-bg: #f5f7fa;
+    --light-text: #2c3e50;
+    --dark-bg: #0f0f2e;
+    --dark-text: #e0e0e0;
+    --glass-border: rgba(0, 212, 255, 0.2);
+    --transition-smooth: all 0.3s ease;
+}
+
+/* ==================== 亮色主題 ==================== */
+body.light-theme {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 25%, #f0f4f8 50%, #e8eef5 75%, #f5f7fa 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    color: #2c3e50;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* ==================== 深色主題 ==================== */
+body.dark-theme {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f0f2e 0%, #16213e 25%, #0f3460 50%, #16213e 75%, #0f0f2e 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    color: #e0e0e0;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* ==================== 漸變背景動畫 ==================== */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* ==================== AI 風格背景粒子 ==================== */
+.particle {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: radial-gradient(circle, var(--primary-cyan), var(--primary-blue));
+    border-radius: 50%;
+    opacity: 0.5;
+    pointer-events: none;
+    animation: float 20s infinite linear;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.5;
+    }
+    90% {
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(-100vh) translateX(100px);
+        opacity: 0;
+    }
+}
+
+/* ==================== 玻璃形態效果 ==================== */
+.glass-card {
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 20px;
+    transition: var(--transition-smooth);
+}
+
+body.light-theme .glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.1);
+}
+
+body.dark-theme .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.glass-card:hover {
+    border-color: rgba(0, 212, 255, 0.5);
+    transform: translateY(-5px);
+}
+
+body.light-theme .glass-card:hover {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.15);
+}
+
+body.dark-theme .glass-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.2);
+}
+
+/* ==================== 容器 ==================== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ==================== 導航欄 ==================== */
+nav {
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+    padding: 20px 0;
+    margin-bottom: 40px;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.05);
+}
+
+body.light-theme nav {
+    background: rgba(245, 247, 250, 0.95);
+}
+
+body.dark-theme nav {
+    background: rgba(15, 15, 46, 0.9);
+}
+
+nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav .logo {
+    font-size: 24px;
+    font-weight: bold;
+    background: linear-gradient(45deg, var(--primary-cyan), var(--primary-blue), var(--primary-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: glow 2s ease-in-out infinite;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@keyframes glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
+    }
+    50% {
+        filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.8));
+    }
+}
+
+nav .menu {
+    display: flex;
+    gap: 30px;
+    list-style: none;
+    align-items: center;
+}
+
+nav a {
+    transition: var(--transition-smooth);
+    position: relative;
+    text-decoration: none;
+}
+
+body.light-theme nav a {
+    color: #2c3e50;
+}
+
+body.dark-theme nav a {
+    color: #00d4ff;
+}
+
+nav a:hover {
+    color: var(--primary-blue);
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-cyan), var(--primary-blue));
+    transition: width 0.3s ease;
+}
+
+nav a:hover::after {
+    width: 100%;
+}
+
+.lang-switch {
+    margin-left: 20px;
+    padding-left: 20px;
+    border-left: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.lang-switch a {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.lang-switch a.active {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--primary-blue);
+}
+
+.lang-switch a:hover {
+    background: rgba(0, 212, 255, 0.15);
+    color: var(--primary-blue);
+}
+
+/* ==================== 按鈕樣式 ==================== */
+.btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, var(--primary-cyan), var(--primary-blue));
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+body.light-theme .btn-primary {
+    color: #0f0f2e;
+}
+
+body.dark-theme .btn-primary {
+    color: #0f0f2e;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--primary-cyan);
+    border: 2px solid var(--primary-cyan);
+    box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(0, 212, 255, 0.1);
+    box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.2), 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+/* ==================== 區塊標題 ==================== */
+.section-title {
+    font-size: 2.5em;
+    margin-bottom: 40px;
+    position: relative;
+    padding-bottom: 20px;
+    text-align: center;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-cyan), transparent);
+}
+
+/* ==================== 技術標籤 ==================== */
+.tech-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    background: rgba(255, 0, 110, 0.15);
+    color: var(--primary-pink);
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin: 2px 2px;
+    border: 1px solid rgba(255, 0, 110, 0.3);
+}
+
+/* ==================== 頁腳 ==================== */
+footer {
+    text-align: center;
+    padding: 30px;
+    border-top: 1px solid rgba(0, 212, 255, 0.15);
+    font-size: 0.95em;
+}
+
+body.light-theme footer {
+    color: #999999;
+}
+
+body.dark-theme footer {
+    color: #808080;
+}
+
+/* ==================== 響應式設計 ==================== */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 2em;
+    }
+
+    nav .menu {
+        flex-direction: column;
+        gap: 15px;
+        font-size: 0.9em;
+    }
+
+    .lang-switch {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+    }
+}

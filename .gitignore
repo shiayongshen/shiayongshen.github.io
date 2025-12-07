@@ -1,0 +1,59 @@
+# 忽略文件和目錄
+
+# 系統文件
+.DS_Store
+Thumbs.db
+.env
+.env.local
+
+# 編輯器和 IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.vs/
+
+# Node.js (如果未來使用 Node)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# 構建文件
+dist/
+build/
+*.tmp
+
+# 備份文件
+*.bak
+*.backup
+*.old
+
+# Git
+.git/
+.gitlog
+
+# 日誌
+*.log
+logs/
+
+# 臨時文件
+temp/
+tmp/
+*.cache
+
+# 壓縮文件
+*.zip
+*.rar
+*.tar
+*.gz
+
+# 本地開發
+.local/
+local.conf
+
+# OS 相關
+._*
+.localized

@@ -1,0 +1,20 @@
+# 夏永紳個人網站 - robots.txt
+# 允許搜尋引擎爬取所有頁面
+
+User-agent: *
+Allow: /
+Allow: /css/
+Allow: /js/
+Allow: /pic/
+Allow: /conf_material/
+
+# 禁止爬取某些檔案
+Disallow: /.git/
+Disallow: /*.json$
+Disallow: *~$
+
+# 爬蟲延遲設定
+Crawl-delay: 1
+
+# 指定 Sitemap 位置
+Sitemap: https://shiayongshen.github.io/sitemap.xml
