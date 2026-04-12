@@ -1,0 +1,16 @@
+[project]
+name = "shiayongshen-github-io"
+version = "0.1.0"
+description = "Personal website monorepo with FastAPI backend and React frontend"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.116.1",
+    "pydantic[email]>=2.11.4",
+    "pydantic-settings>=2.9.1",
+    "pyjwt>=2.10.1",
+    "python-multipart>=0.0.20",
+    "sqlalchemy>=2.0.40",
+    "uvicorn>=0.35.0",
+    "psycopg2-binary>=2.9.11",
+]

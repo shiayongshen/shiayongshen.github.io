@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+frontend/dist/
+site.db
+backend/site.db
+.env
+frontend/.env
+content/uploads/
