@@ -63,7 +63,7 @@ export function BlogPage({
             />
           ) : (
             <article key={post.slug} className="panel">
-              {post.cover_image_url ? <img className="post-cover" src={post.cover_image_url} alt={post.title} /> : null}
+              {post.cover_image_url ? <img className="post-cover" src={post.cover_image_url} alt={post.title} loading="lazy" /> : null}
               <div className="post-meta">
                 <span>{new Date(post.created_at).toLocaleDateString()}</span>
                 <span>{post.category}</span>

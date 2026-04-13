@@ -133,7 +133,7 @@ export function ProfileEditor({
           </label>
           {form.avatar_url ? (
             <div className="image-manager">
-              <img className="image-preview image-preview-avatar" src={form.avatar_url} alt="Avatar preview" />
+              <img className="image-preview image-preview-avatar" src={form.avatar_url} alt="Avatar preview" loading="lazy" />
               <button type="button" className="text-button" onClick={clearAvatar}>
                 Remove avatar
               </button>
@@ -334,7 +334,7 @@ export function ProfileEditor({
                 </div>
                 {experience.company_logo_url ? (
                   <div className="image-manager">
-                    <img className="image-preview image-preview-logo" src={experience.company_logo_url} alt="Company logo preview" />
+                    <img className="image-preview image-preview-logo" src={experience.company_logo_url} alt="Company logo preview" loading="lazy" />
                     <button
                       type="button"
                       className="text-button"
@@ -362,7 +362,7 @@ export function ProfileEditor({
                 </div>
                 {experience.project_image_url ? (
                   <div className="image-manager">
-                    <img className="image-preview image-preview-banner" src={experience.project_image_url} alt="Project preview" />
+                    <img className="image-preview image-preview-banner" src={experience.project_image_url} alt="Project preview" loading="lazy" />
                     <button
                       type="button"
                       className="text-button"
@@ -432,7 +432,7 @@ export function ProfileEditor({
             <span>Live Preview</span>
           </div>
           <div className="stack">
-            {form.avatar_url ? <img className="image-preview image-preview-avatar" src={form.avatar_url} alt={form.full_name} /> : null}
+            {form.avatar_url ? <img className="image-preview image-preview-avatar" src={form.avatar_url} alt={form.full_name} loading="lazy" /> : null}
             <div>
               <p className="eyebrow">{form.location}</p>
               <h2>{form.full_name}</h2>
@@ -478,12 +478,12 @@ export function ProfileEditor({
               {form.experiences.map((experience, index) => (
                 <article key={`${experience.company}-${index}`} className="experience-card preview-card">
                   {experience.project_image_url ? (
-                    <img className="experience-project-image" src={experience.project_image_url} alt={experience.company} />
+                    <img className="experience-project-image" src={experience.project_image_url} alt={experience.company} loading="lazy" />
                   ) : null}
                   <div className="experience-top">
                     <span className="label">{experience.period || "Period"}</span>
                     {experience.company_logo_url ? (
-                      <img className="experience-logo" src={experience.company_logo_url} alt={experience.company} />
+                      <img className="experience-logo" src={experience.company_logo_url} alt={experience.company} loading="lazy" />
                     ) : null}
                   </div>
                   <h3>{experience.role || "Role"}</h3>

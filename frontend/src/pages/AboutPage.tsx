@@ -118,7 +118,7 @@ export function AboutPage({
       <section className="hero">
         <aside className="hero-photo-card">
           {view.avatar_url ? (
-            <img className="hero-photo" src={view.avatar_url} alt={view.full_name} />
+            <img className="hero-photo" src={view.avatar_url} alt={view.full_name} loading="lazy" />
           ) : (
             <div className="hero-photo hero-photo-placeholder">
               <span>{view.full_name.slice(0, 1)}</span>
@@ -466,6 +466,7 @@ export function AboutPage({
                       className="experience-project-image"
                       src={draft.experiences[index].project_image_url}
                       alt={`${draft.experiences[index].company} project`}
+                      loading="lazy"
                     />
                   ) : null}
                   <div className="stack inline-experience-form">
@@ -554,12 +555,12 @@ export function AboutPage({
             const content: ReactNode = (
               <>
                 {experience.project_image_url ? (
-                  <img className="experience-project-image" src={experience.project_image_url} alt={`${experience.company} project`} />
+                  <img className="experience-project-image" src={experience.project_image_url} alt={`${experience.company} project`} loading="lazy" />
                 ) : null}
                 <div className="experience-top">
                   <span className="label">{experience.period}</span>
                   {experience.company_logo_url ? (
-                    <img className="experience-logo" src={experience.company_logo_url} alt={`${experience.company} logo`} />
+                    <img className="experience-logo" src={experience.company_logo_url} alt={`${experience.company} logo`} loading="lazy" />
                   ) : null}
                 </div>
                 <h3>{experience.role}</h3>

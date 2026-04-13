@@ -188,7 +188,7 @@ export function PostEditor({
           </label>
           {form.cover_image_url ? (
             <div className="image-manager">
-              <img className="image-preview image-preview-banner" src={form.cover_image_url} alt="Cover preview" />
+              <img className="image-preview image-preview-banner" src={form.cover_image_url} alt="Cover preview" loading="lazy" />
               <button type="button" className="text-button" onClick={clearCoverImage}>
                 Remove cover image
               </button>
@@ -240,7 +240,7 @@ export function PostEditor({
           <div className="section-heading">
             <span>Live Preview</span>
           </div>
-          {form.cover_image_url ? <img className="image-preview image-preview-banner" src={form.cover_image_url} alt={form.title} /> : null}
+          {form.cover_image_url ? <img className="image-preview image-preview-banner" src={form.cover_image_url} alt={form.title} loading="lazy" /> : null}
           <div className="stack">
             <div className="post-meta">
               <span>{form.category || "category"}</span>

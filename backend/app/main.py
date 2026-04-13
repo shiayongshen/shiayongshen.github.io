@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import io
 import json
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from PIL import Image, ImageOps
 from sqlalchemy.orm import Session
 
 from .auth import authenticate_admin, create_access_token, get_current_admin
@@ -89,6 +91,33 @@ def serialize_guestbook(entry: GuestbookEntry) -> GuestbookRead:
     )
 
 
+def optimize_image_upload(content: bytes, content_type: str) -> tuple[bytes, str, str]:
+    fallback_ext = {
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/webp": ".webp",
+        "image/gif": ".gif",
+    }.get(content_type, ".bin")
+    try:
+        with Image.open(io.BytesIO(content)) as source:
+            normalized = ImageOps.exif_transpose(source)
+            is_animated = bool(getattr(normalized, "is_animated", False))
+            if content_type == "image/gif" and is_animated:
+                return content, content_type, ".gif"
+
+            max_width = 1600
+            max_height = 1600
+            normalized.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+            if normalized.mode not in {"RGB", "L"}:
+                normalized = normalized.convert("RGB")
+
+            buffer = io.BytesIO()
+            normalized.save(buffer, format="WEBP", quality=82, method=6)
+            return buffer.getvalue(), "image/webp", ".webp"
+    except Exception:
+        return content, content_type, fallback_ext
+
+
 @app.get(f"{settings.api_prefix}/health")
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
@@ -101,17 +130,17 @@ async def upload_image(
     _admin=Depends(get_current_admin),
     db: Session = Depends(get_db),
 ) -> dict[str, str]:
-    allowed_types = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/gif": ".gif"}
-    suffix = allowed_types.get(file.content_type or "")
-    if not suffix:
+    allowed_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+    if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Unsupported image type")
 
-    content = await file.read()
+    raw_content = await file.read()
+    content, stored_content_type, suffix = optimize_image_upload(raw_content, file.content_type or "application/octet-stream")
     image_id = uuid4().hex
     image = UploadedImage(
         id=image_id,
         filename=file.filename or f"{image_id}{suffix}",
-        content_type=file.content_type or "application/octet-stream",
+        content_type=stored_content_type,
         file_ext=suffix,
         data=content,
     )
@@ -149,7 +178,11 @@ def get_uploaded_image(image_name: str, db: Session = Depends(get_db)) -> Respon
     image = db.query(UploadedImage).filter(UploadedImage.id == image_id).first()
     if not image:
         raise HTTPException(status_code=404, detail="Image not found")
-    return Response(content=image.data, media_type=image.content_type)
+    return Response(
+        content=image.data,
+        media_type=image.content_type,
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 
 @app.post(f"{settings.api_prefix}/auth/login", response_model=LoginResponse)

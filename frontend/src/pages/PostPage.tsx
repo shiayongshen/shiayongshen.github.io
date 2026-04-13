@@ -44,7 +44,7 @@ export function PostPage({ post, isAdmin, onEdit, onSavePost, onDeletePost, onUp
 
   return (
     <article className="panel article">
-      {post.cover_image_url ? <img className="article-cover" src={post.cover_image_url} alt={post.title} /> : null}
+      {post.cover_image_url ? <img className="article-cover" src={post.cover_image_url} alt={post.title} loading="lazy" /> : null}
       <div className="post-meta">
         <span>{new Date(post.created_at).toLocaleDateString()}</span>
         <span>{post.category}</span>
