@@ -11,9 +11,8 @@ from sqlalchemy.orm import Session
 
 from .auth import authenticate_admin, create_access_token, get_current_admin
 from .config import settings
-from .content import MarkdownPost, delete_post, get_post, list_posts, save_post
 from .database import Base, SessionLocal, engine, get_db
-from .models import GuestbookEntry, Profile
+from .models import BlogPost, GuestbookEntry, Profile
 from .schemas import (
     BlogPostCreate,
     BlogPostRead,
@@ -49,7 +48,7 @@ def on_startup() -> None:
         seed_database(db)
 
 
-def serialize_post(post: MarkdownPost) -> BlogPostRead:
+def serialize_post(post: BlogPost) -> BlogPostRead:
     return BlogPostRead(
         title=post.title,
         slug=post.slug,
@@ -57,7 +56,7 @@ def serialize_post(post: MarkdownPost) -> BlogPostRead:
         category=post.category,
         cover_image_url=post.cover_image_url,
         content_markdown=post.content_markdown,
-        tags=post.tags,
+        tags=json.loads(post.tags_json),
         published=post.published,
         created_at=post.created_at,
         updated_at=post.updated_at,
@@ -153,13 +152,23 @@ def get_profile(db: Session = Depends(get_db)) -> ProfileRead:
 
 
 @app.get(f"{settings.api_prefix}/blog-posts", response_model=list[BlogPostRead])
-def list_blog_posts() -> list[BlogPostRead]:
-    return [serialize_post(post) for post in list_posts(include_drafts=False)]
+def list_blog_posts(db: Session = Depends(get_db)) -> list[BlogPostRead]:
+    posts = (
+        db.query(BlogPost)
+        .filter(BlogPost.published.is_(True))
+        .order_by(BlogPost.created_at.desc())
+        .all()
+    )
+    return [serialize_post(post) for post in posts]
 
 
 @app.get(f"{settings.api_prefix}/blog-posts/{{slug}}", response_model=BlogPostRead)
-def get_blog_post(slug: str) -> BlogPostRead:
-    post = get_post(slug, include_drafts=False)
+def get_blog_post(slug: str, db: Session = Depends(get_db)) -> BlogPostRead:
+    post = (
+        db.query(BlogPost)
+        .filter(BlogPost.slug == slug, BlogPost.published.is_(True))
+        .first()
+    )
     if not post:
         raise HTTPException(status_code=404, detail="Blog post not found")
     return serialize_post(post)
@@ -234,24 +243,37 @@ def admin_update_profile(
 @app.get(f"{settings.api_prefix}/admin/blog-posts", response_model=list[BlogPostRead])
 def admin_list_posts(
     _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
 ) -> list[BlogPostRead]:
-    return [serialize_post(post) for post in list_posts(include_drafts=True)]
+    posts = db.query(BlogPost).order_by(BlogPost.created_at.desc()).all()
+    return [serialize_post(post) for post in posts]
 
 
 @app.post(f"{settings.api_prefix}/admin/blog-posts", response_model=BlogPostRead, status_code=status.HTTP_201_CREATED)
 def admin_create_post(
     payload: BlogPostCreate,
     _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
 ) -> BlogPostRead:
-    try:
-        post = save_post(
-            {
-                **payload.model_dump(),
-                "created_at": payload.created_at.isoformat() if payload.created_at else None,
-            }
-        )
-    except FileExistsError as exc:
-        raise HTTPException(status_code=400, detail="Slug already exists") from exc
+    if db.query(BlogPost).filter(BlogPost.slug == payload.slug).first():
+        raise HTTPException(status_code=400, detail="Slug already exists")
+
+    post = BlogPost(
+        title=payload.title,
+        slug=payload.slug,
+        summary=payload.summary,
+        category=payload.category,
+        cover_image_url=payload.cover_image_url,
+        content_markdown=payload.content_markdown,
+        tags_json=json.dumps(payload.tags, ensure_ascii=False),
+        published=payload.published,
+    )
+    if payload.created_at:
+        post.created_at = payload.created_at
+        post.updated_at = payload.created_at
+    db.add(post)
+    db.commit()
+    db.refresh(post)
     return serialize_post(post)
 
 
@@ -260,20 +282,27 @@ def admin_update_post(
     slug: str,
     payload: BlogPostUpdate,
     _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
 ) -> BlogPostRead:
-    existing = get_post(slug, include_drafts=True)
-    if not existing:
+    post = db.query(BlogPost).filter(BlogPost.slug == slug).first()
+    if not post:
         raise HTTPException(status_code=404, detail="Blog post not found")
-    try:
-        post = save_post(
-            {
-                **payload.model_dump(),
-                "created_at": payload.created_at.isoformat() if payload.created_at else existing.created_at.isoformat(),
-            },
-            original_slug=slug,
-        )
-    except FileExistsError as exc:
-        raise HTTPException(status_code=400, detail="Slug already exists") from exc
+    slug_conflict = db.query(BlogPost).filter(BlogPost.slug == payload.slug, BlogPost.id != post.id).first()
+    if slug_conflict:
+        raise HTTPException(status_code=400, detail="Slug already exists")
+
+    post.title = payload.title
+    post.slug = payload.slug
+    post.summary = payload.summary
+    post.category = payload.category
+    post.cover_image_url = payload.cover_image_url
+    post.content_markdown = payload.content_markdown
+    post.tags_json = json.dumps(payload.tags, ensure_ascii=False)
+    post.published = payload.published
+    if payload.created_at:
+        post.created_at = payload.created_at
+    db.commit()
+    db.refresh(post)
     return serialize_post(post)
 
 
@@ -281,11 +310,13 @@ def admin_update_post(
 def admin_delete_post(
     slug: str,
     _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
 ) -> None:
-    try:
-        delete_post(slug)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Blog post not found") from exc
+    post = db.query(BlogPost).filter(BlogPost.slug == slug).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    db.delete(post)
+    db.commit()
 
 
 @app.get(f"{settings.api_prefix}/admin/guestbook", response_model=list[GuestbookRead])

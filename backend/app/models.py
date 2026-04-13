@@ -40,6 +40,22 @@ class Profile(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 
+class BlogPost(Base):
+    __tablename__ = "blog_posts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(200))
+    slug: Mapped[str] = mapped_column(String(200), unique=True, index=True)
+    summary: Mapped[str] = mapped_column(String(280))
+    category: Mapped[str] = mapped_column(String(80), default="general")
+    cover_image_url: Mapped[str] = mapped_column(String(255), default="")
+    content_markdown: Mapped[str] = mapped_column(Text)
+    tags_json: Mapped[str] = mapped_column(Text, default="[]")
+    published: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
 class GuestbookEntry(Base):
     __tablename__ = "guestbook_entries"
 

@@ -1,11 +1,16 @@
 import json
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
 from .auth import hash_password
 from .config import settings
-from .content import POSTS_DIR, ensure_posts_dir
-from .models import AdminUser, GuestbookEntry, Profile
+from .content import list_posts
+from .models import AdminUser, BlogPost, GuestbookEntry, Profile
+
+
+def parse_iso_datetime(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
 def seed_database(db: Session) -> None:
@@ -114,7 +119,7 @@ def seed_database(db: Session) -> None:
             )
         )
 
-    seed_markdown_posts()
+    seed_blog_posts(db)
 
     if not db.query(GuestbookEntry).first():
         db.add(
@@ -128,56 +133,81 @@ def seed_database(db: Session) -> None:
     db.commit()
 
 
-def seed_markdown_posts() -> None:
-    ensure_posts_dir()
-    posts: dict[str, str] = {
-        "welcome-to-my-digital-garden.md": """---
-title: Welcome to My Digital Garden
-slug: welcome-to-my-digital-garden
-summary: 第一篇文章，用來介紹這個網站的內容方向與寫作方式。
-category: writing
-cover_image_url: https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80
-tags: intro, writing
-published: true
-created_at: 2026-04-01T09:00:00Z
-updated_at: 2026-04-01T09:00:00Z
----
+def seed_blog_posts(db: Session) -> None:
+    if db.query(BlogPost).first():
+        return
 
-# Welcome
+    posts = list_posts(include_drafts=True)
+    if posts:
+        for post in posts:
+            db.add(
+                BlogPost(
+                    title=post.title,
+                    slug=post.slug,
+                    summary=post.summary,
+                    category=post.category,
+                    cover_image_url=post.cover_image_url,
+                    content_markdown=post.content_markdown,
+                    tags_json=json.dumps(post.tags, ensure_ascii=False),
+                    published=post.published,
+                    created_at=post.created_at,
+                    updated_at=post.updated_at,
+                )
+            )
+        return
 
-這個網站會持續整理我的技術筆記、工作方法與一些長篇文章。
+    default_posts = [
+        {
+            "title": "Welcome to My Digital Garden",
+            "slug": "welcome-to-my-digital-garden",
+            "summary": "第一篇文章，用來介紹這個網站的內容方向與寫作方式。",
+            "category": "writing",
+            "cover_image_url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80",
+            "content_markdown": (
+                "# Welcome\n\n"
+                "這個網站會持續整理我的技術筆記、工作方法與一些長篇文章。\n\n"
+                "## Why Markdown?\n\n"
+                "因為可攜、簡單、版本控制友善。\n\n"
+                "![Desk setup](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80)\n"
+            ),
+            "tags": ["intro", "writing"],
+            "published": True,
+            "created_at": "2026-04-01T09:00:00+00:00",
+            "updated_at": "2026-04-01T09:00:00+00:00",
+        },
+        {
+            "title": "FastAPI + React Personal Site Architecture",
+            "slug": "fastapi-react-personal-site-architecture",
+            "summary": "記錄這個個人網站的基本架構與取捨。",
+            "category": "engineering",
+            "cover_image_url": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
+            "content_markdown": (
+                "# Architecture Notes\n\n"
+                "- Frontend: React SPA\n"
+                "- Backend: FastAPI\n"
+                "- Content: Blog posts stored in PostgreSQL\n\n"
+                "## Why this split?\n\n"
+                "因為個人網站的寫作內容、留言與後台管理都更適合統一走 API 與資料庫。\n"
+            ),
+            "tags": ["fastapi", "react", "architecture"],
+            "published": True,
+            "created_at": "2026-04-05T09:00:00+00:00",
+            "updated_at": "2026-04-05T09:00:00+00:00",
+        },
+    ]
 
-## Why Markdown?
-
-因為可攜、簡單、版本控制友善。
-
-![Desk setup](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80)
-""",
-        "fastapi-react-personal-site-architecture.md": """---
-title: FastAPI + React Personal Site Architecture
-slug: fastapi-react-personal-site-architecture
-summary: 記錄這個個人網站的基本架構與取捨。
-category: engineering
-cover_image_url: https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80
-tags: fastapi, react, architecture
-published: true
-created_at: 2026-04-05T09:00:00Z
-updated_at: 2026-04-05T09:00:00Z
----
-
-# Architecture Notes
-
-- Frontend: React SPA
-- Backend: FastAPI
-- Content: Markdown files under `content/posts`
-
-## Why this split?
-
-因為個人網站的寫作內容適合用檔案管理，而留言板與履歷資料仍然適合走 API。
-""",
-    }
-
-    for filename, content in posts.items():
-        path = POSTS_DIR / filename
-        if not path.exists():
-            path.write_text(content, encoding="utf-8")
+    for post in default_posts:
+        db.add(
+            BlogPost(
+                title=post["title"],
+                slug=post["slug"],
+                summary=post["summary"],
+                category=post["category"],
+                cover_image_url=post["cover_image_url"],
+                content_markdown=post["content_markdown"],
+                tags_json=json.dumps(post["tags"], ensure_ascii=False),
+                published=post["published"],
+                created_at=parse_iso_datetime(post["created_at"]),
+                updated_at=parse_iso_datetime(post["updated_at"]),
+            )
+        )

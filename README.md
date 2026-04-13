@@ -4,7 +4,7 @@
 
 - 公開前台：個人資料 / 履歷、Markdown 部落格、留言板
 - 後端管理：登入後可編輯個人資料、文章與留言審核
-- 後端：`FastAPI + SQLite + JWT`
+- 後端：`FastAPI + PostgreSQL/SQLite + JWT`
 - 前端：`Vite + React + TypeScript`
 - 部落格文章來源：`content/posts/*.md`
 - 上傳圖片會存到：`content/uploads/`
@@ -48,9 +48,10 @@ uvicorn backend.app.main:app --reload
 - Username: `admin`
 - Password: `changeme123`
 
-第一次啟動會自動建立 `site.db` 並塞入示範資料。
+第一次啟動會自動建立資料表並塞入示範資料。
 
-如果你先前已經啟動過舊版本、產生了舊 schema 的 `site.db`，現在改版後建議先刪掉它再重跑一次。
+本地如果沒有設定 `DATABASE_URL`，預設仍會使用 `site.db`。
+正式部署時請把 `DATABASE_URL` 指到你的 PostgreSQL。
 
 ## Frontend Setup
 
@@ -87,14 +88,16 @@ npm run dev
   - Blog CRUD
   - Guestbook approve / edit / delete
 - 內容格式：
-  - 部落格正文使用實體 Markdown 檔案
+- 部落格正文儲存在資料庫
   - 履歷與研究區塊混合使用 Markdown 與結構化資料
   - experience 區塊使用卡片式資料，可連到心得文章
   - publications 使用結構化資料，可連到 blog 或外部連結
 
 ## Markdown Post Format
 
-文章放在 `content/posts/*.md`，格式如下：
+如果你是從舊版升級，第一次啟動時若資料庫內還沒有文章，系統會自動把 `content/posts/*.md` 匯入 PostgreSQL。
+
+文章資料格式如下：
 
 ```md
 ---
@@ -119,7 +122,7 @@ updated_at: 2026-04-12T08:00:00Z
 - `tags`: 逗號分隔 tag
 - `published`: 是否公開
 
-後台新增/編輯文章時，API 會直接更新對應的 Markdown 檔案。
+後台新增/編輯文章時，API 會直接更新資料庫中的 `blog_posts`。
 
 ## Image Uploads
 
