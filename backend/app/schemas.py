@@ -37,6 +37,7 @@ class PublicationItem(BaseModel):
     authors: str = Field(min_length=1, max_length=280)
     venue: str = Field(min_length=1, max_length=160)
     year: int = Field(ge=1900, le=2100)
+    award: str = Field(default="", max_length=240)
     external_url: str = ""
     blog_slug: str | None = Field(default=None, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { GuestbookEditor } from "./components/GuestbookEditor";
-import { ProfileEditor } from "./components/ProfileEditor";
 import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
 import { AdminDashboard } from "./pages/AdminDashboard";
@@ -65,7 +64,7 @@ export default function App() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [guestbookEntries, setGuestbookEntries] = useState<GuestbookEntry[]>([]);
   const [token, setToken] = useState<string>(() => localStorage.getItem("admin_token") ?? "");
-  const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  const [profileDraft, setProfileDraft] = useState<Omit<Profile, "id" | "updated_at"> | null>(null);
   const [editingGuestbook, setEditingGuestbook] = useState<GuestbookEntry | null>(null);
 
   const isAdmin = Boolean(token);
@@ -114,7 +113,7 @@ export default function App() {
   function handleLogout() {
     localStorage.removeItem("admin_token");
     setToken("");
-    setProfileEditorOpen(false);
+    setProfileDraft(null);
     navigate("/");
   }
 
@@ -135,11 +134,23 @@ export default function App() {
     await loadPublicData();
   }
 
-  async function handleSaveProfile(payload: Omit<Profile, "id" | "updated_at">) {
+  function startProfileEdit() {
+    if (!profile) return;
+    const { id: _id, updated_at: _updatedAt, ...draft } = profile;
+    setProfileDraft(draft);
+  }
+
+  function cancelProfileEdit() {
+    setProfileDraft(null);
+  }
+
+  async function handleSaveProfile(payload?: Omit<Profile, "id" | "updated_at">) {
     if (!token) return;
-    await api.adminUpdateProfile(token, payload);
+    const nextProfile = payload ?? profileDraft;
+    if (!nextProfile) return;
+    await api.adminUpdateProfile(token, nextProfile);
     await loadAdminData(token);
-    setProfileEditorOpen(false);
+    setProfileDraft(null);
   }
 
   async function handleSavePost(
@@ -188,18 +199,12 @@ export default function App() {
               <AboutPage
                 profile={profile}
                 isAdmin={isAdmin}
-                onEdit={() => setProfileEditorOpen(true)}
-                editor={
-                  profileEditorOpen && profile ? (
-                    <ProfileEditor
-                      profile={profile}
-                      onSave={handleSaveProfile}
-                      onCancel={() => setProfileEditorOpen(false)}
-                      onUploadImage={handleUploadImage}
-                      onDeleteImage={handleDeleteImage}
-                    />
-                  ) : undefined
-                }
+                isEditing={Boolean(profileDraft)}
+                draft={profileDraft}
+                onStartEdit={startProfileEdit}
+                onCancelEdit={cancelProfileEdit}
+                onSaveEdit={() => handleSaveProfile()}
+                onDraftChange={setProfileDraft}
               />
             }
           />
@@ -259,18 +264,15 @@ export default function App() {
                 <AboutPage
                   profile={profile}
                   isAdmin={isAdmin}
-                  onEdit={() => setProfileEditorOpen(true)}
-                  editor={
-                    profile ? (
-                      <ProfileEditor
-                        profile={profile}
-                        onSave={handleSaveProfile}
-                        onCancel={() => navigate("/")}
-                        onUploadImage={handleUploadImage}
-                        onDeleteImage={handleDeleteImage}
-                      />
-                    ) : undefined
-                  }
+                  isEditing={Boolean(profileDraft)}
+                  draft={profileDraft}
+                  onStartEdit={startProfileEdit}
+                  onCancelEdit={() => {
+                    cancelProfileEdit();
+                    navigate("/");
+                  }}
+                  onSaveEdit={() => handleSaveProfile()}
+                  onDraftChange={setProfileDraft}
                 />
               ) : (
                 <Navigate to="/login" replace />

@@ -18,6 +18,7 @@ export type PublicationItem = {
   authors: string;
   venue: string;
   year: number;
+  award: string;
   external_url: string;
   blog_slug: string | null;
 };

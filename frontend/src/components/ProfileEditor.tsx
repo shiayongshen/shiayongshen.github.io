@@ -180,6 +180,11 @@ export function ProfileEditor({
                     placeholder="Year"
                   />
                 </div>
+                <input
+                  value={publication.award}
+                  onChange={(e) => updatePublication(index, { award: e.target.value })}
+                  placeholder="Award / Honor"
+                />
                 <div className="inline-form">
                   <input
                     value={publication.blog_slug ?? ""}
@@ -207,6 +212,7 @@ export function ProfileEditor({
                       authors: "",
                       venue: "",
                       year: new Date().getFullYear(),
+                      award: "",
                       external_url: "",
                       blog_slug: null,
                     },

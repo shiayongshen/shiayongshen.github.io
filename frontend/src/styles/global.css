@@ -280,6 +280,13 @@ input[type="file"] {
   padding-top: 0;
 }
 
+.publication-card-editing {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
 .publication-copy {
   gap: 8px;
 }
@@ -310,6 +317,10 @@ input[type="file"] {
 .experience-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 44px rgba(42, 35, 26, 0.14);
+}
+
+.experience-card-editing:hover {
+  transform: none;
 }
 
 .experience-card h3,
@@ -495,6 +506,38 @@ textarea {
 
 .image-preview-banner {
   max-height: 220px;
+}
+
+.inline-edit-stack {
+  gap: 12px;
+}
+
+.inline-edit-textarea {
+  min-height: 120px;
+}
+
+.inline-edit-links {
+  display: grid;
+}
+
+.inline-chip-editor {
+  width: 100%;
+}
+
+.inline-experience-form {
+  padding: 0 24px 24px;
+}
+
+.award-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(212, 140, 86, 0.16);
+  color: #8a4d1f;
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
 .preview-card {
