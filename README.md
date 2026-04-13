@@ -7,7 +7,7 @@
 - 後端：`FastAPI + PostgreSQL/SQLite + JWT`
 - 前端：`Vite + React + TypeScript`
 - 部落格文章來源：`content/posts/*.md`
-- 上傳圖片會存到：`content/uploads/`
+- 上傳圖片會存到 PostgreSQL
 
 ## Structure
 
@@ -127,7 +127,7 @@ updated_at: 2026-04-12T08:00:00Z
 ## Image Uploads
 
 - 封面圖、experience logo、project image 現在可直接在後台選檔上傳
-- 後端會把檔案存到 `content/uploads/`
+- 圖片檔案本體會存進 PostgreSQL 的 `uploaded_images`
 - 對外存取路徑是 `/uploads/...`
 
 ## Experience Cards

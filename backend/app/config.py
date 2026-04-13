@@ -1,6 +1,5 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -13,7 +12,6 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = "changeme123"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
-    uploads_dir: str = "content/uploads"
 
     @property
     def get_database_url(self) -> str:
@@ -31,10 +29,6 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
-
-    @property
-    def uploads_path(self) -> Path:
-        return Path(self.uploads_dir)
 
 
 settings = Settings()

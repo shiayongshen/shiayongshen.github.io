@@ -3,16 +3,15 @@ from __future__ import annotations
 import json
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from .auth import authenticate_admin, create_access_token, get_current_admin
 from .config import settings
 from .database import Base, SessionLocal, engine, get_db
-from .models import BlogPost, GuestbookEntry, Profile
+from .models import BlogPost, GuestbookEntry, Profile, UploadedImage
 from .schemas import (
     BlogPostCreate,
     BlogPostRead,
@@ -37,8 +36,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-settings.uploads_path.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=settings.uploads_path), name="uploads")
 
 
 @app.on_event("startup")
@@ -102,18 +99,26 @@ async def upload_image(
     request: Request,
     file: UploadFile = File(...),
     _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
 ) -> dict[str, str]:
     allowed_types = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/gif": ".gif"}
     suffix = allowed_types.get(file.content_type or "")
     if not suffix:
         raise HTTPException(status_code=400, detail="Unsupported image type")
 
-    filename = f"{uuid4().hex}{suffix}"
-    destination = settings.uploads_path / filename
     content = await file.read()
-    destination.write_bytes(content)
+    image_id = uuid4().hex
+    image = UploadedImage(
+        id=image_id,
+        filename=file.filename or f"{image_id}{suffix}",
+        content_type=file.content_type or "application/octet-stream",
+        file_ext=suffix,
+        data=content,
+    )
+    db.add(image)
+    db.commit()
 
-    url = str(request.base_url).rstrip("/") + f"/uploads/{filename}"
+    url = str(request.base_url).rstrip("/") + f"/uploads/{image_id}{suffix}"
     return {"url": url}
 
 
@@ -121,17 +126,30 @@ async def upload_image(
 def delete_uploaded_image(
     payload: UploadDeleteRequest,
     _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
 ) -> dict[str, str]:
     marker = "/uploads/"
     if marker not in payload.url:
         return {"status": "ignored"}
-    relative_name = payload.url.split(marker, 1)[1]
-    target = (settings.uploads_path / relative_name).resolve()
-    uploads_root = settings.uploads_path.resolve()
-    if uploads_root not in target.parents or not target.exists():
+    image_ref = payload.url.split(marker, 1)[1].split("?", 1)[0]
+    image_id = image_ref.split(".", 1)[0]
+    if not image_id:
         return {"status": "ignored"}
-    target.unlink()
+    image = db.query(UploadedImage).filter(UploadedImage.id == image_id).first()
+    if not image:
+        return {"status": "ignored"}
+    db.delete(image)
+    db.commit()
     return {"status": "deleted"}
+
+
+@app.get("/uploads/{image_name}")
+def get_uploaded_image(image_name: str, db: Session = Depends(get_db)) -> Response:
+    image_id = image_name.split(".", 1)[0]
+    image = db.query(UploadedImage).filter(UploadedImage.id == image_id).first()
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return Response(content=image.data, media_type=image.content_type)
 
 
 @app.post(f"{settings.api_prefix}/auth/login", response_model=LoginResponse)
