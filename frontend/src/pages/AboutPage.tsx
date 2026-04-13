@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
-import type { ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
+import type { BlogPost, ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
 import { MarkdownCard } from "../components/MarkdownCard";
 
 type ProfileDraft = Omit<Profile, "id" | "updated_at">;
 
 type AboutPageProps = {
   profile: Profile | null;
+  posts: BlogPost[];
   isAdmin: boolean;
   isEditing: boolean;
   draft: ProfileDraft | null;
@@ -26,6 +27,7 @@ function updateArrayItem<T>(items: T[], index: number, patch: Partial<T>): T[] {
 
 export function AboutPage({
   profile,
+  posts,
   isAdmin,
   isEditing,
   draft,
@@ -37,12 +39,24 @@ export function AboutPage({
   onDeleteImage,
 }: AboutPageProps) {
   const [uploadingField, setUploadingField] = useState("");
+  const [showLandingIntro, setShowLandingIntro] = useState(() => {
+    if (typeof window === "undefined" || isEditing) return false;
+    return window.sessionStorage.getItem("home_intro_seen") !== "true";
+  });
   if (!profile) {
     return <div className="panel">Loading profile...</div>;
   }
 
   const editable = isEditing && draft;
   const view = editable ? draft : profile;
+  const latestPosts = posts.filter((post) => post.published).slice(0, 3);
+
+  useEffect(() => {
+    if (editable || !showLandingIntro) return;
+    window.sessionStorage.setItem("home_intro_seen", "true");
+    const timer = window.setTimeout(() => setShowLandingIntro(false), 1700);
+    return () => window.clearTimeout(timer);
+  }, [editable, showLandingIntro]);
 
   function updateField<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
     if (!draft) return;
@@ -114,7 +128,14 @@ export function AboutPage({
   }
 
   return (
-    <div className="stack">
+    <div className={`stack${showLandingIntro ? " home-intro-active" : ""}`}>
+      {showLandingIntro ? (
+        <div className="home-intro" aria-hidden="true">
+          <div className="home-intro-mark">VH</div>
+          <p className="home-intro-kicker">Vincent Hsia</p>
+          <h1>Writing, building, shipping.</h1>
+        </div>
+      ) : null}
       <section className="hero">
         <aside className="hero-photo-card">
           {view.avatar_url ? (
@@ -218,6 +239,44 @@ export function AboutPage({
           ) : null}
         </aside>
       </section>
+
+      {!editable && latestPosts.length ? (
+        <section className="panel stack">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Latest Writing</p>
+              <h1>最近發表的文章</h1>
+            </div>
+            <Link to="/blog" className="primary-link">
+              View all posts
+            </Link>
+          </div>
+          <div className="latest-posts-grid">
+            {latestPosts.map((post) => (
+              <article key={post.slug} className="latest-post-card">
+                <div className="post-meta">
+                  <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                  <span>{post.category}</span>
+                </div>
+                <h3>
+                  <Link to={`/blog/${post.slug}`}>{post.title}</Link>
+                </h3>
+                <p className="muted">{post.summary}</p>
+                <div className="tag-row">
+                  {post.tags.slice(0, 3).map((tag) => (
+                    <span key={tag} className="tag">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <Link to={`/blog/${post.slug}`} className="primary-link">
+                  Read article
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid-two">
         {editable ? (

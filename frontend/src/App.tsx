@@ -214,6 +214,7 @@ export default function App() {
             element={
               <AboutPage
                 profile={profile}
+                posts={posts}
                 isAdmin={isAdmin}
                 isEditing={Boolean(profileDraft)}
                 draft={profileDraft}
@@ -290,6 +291,7 @@ export default function App() {
               isAdmin ? (
                 <AboutPage
                   profile={profile}
+                  posts={posts}
                   isAdmin={isAdmin}
                   isEditing={Boolean(profileDraft)}
                   draft={profileDraft}
