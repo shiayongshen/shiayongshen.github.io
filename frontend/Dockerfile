@@ -1,9 +1,9 @@
 # 第一階段：建置 (Build)
 FROM node:20-slim AS builder
 WORKDIR /app
-COPY frontend/package*.json ./
+COPY package*.json ./
 RUN npm install
-COPY frontend .
+COPY . .
 RUN npm run build
 
 # 第二階段：運行 (Nginx 伺服器)
