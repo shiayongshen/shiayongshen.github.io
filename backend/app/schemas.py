@@ -18,34 +18,34 @@ class LoginResponse(BaseModel):
 
 
 class LinkItem(BaseModel):
-    label: str = Field(min_length=1, max_length=40)
-    url: str = Field(min_length=1, max_length=255)
+    label: str = Field(min_length=1, max_length=80)
+    url: str = Field(min_length=1, max_length=2048)
 
 
 class ExperienceItem(BaseModel):
     company: str = Field(min_length=1, max_length=120)
     role: str = Field(min_length=1, max_length=120)
-    period: str = Field(min_length=1, max_length=80)
-    summary: str = Field(min_length=1, max_length=220)
+    period: str = Field(min_length=1, max_length=120)
+    summary: str = Field(min_length=1, max_length=1500)
     company_logo_url: str = ""
     project_image_url: str = ""
     story_slug: str | None = Field(default=None, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class PublicationItem(BaseModel):
-    title: str = Field(min_length=1, max_length=240)
-    authors: str = Field(min_length=1, max_length=280)
-    venue: str = Field(min_length=1, max_length=160)
+    title: str = Field(min_length=1, max_length=500)
+    authors: str = Field(min_length=1, max_length=800)
+    venue: str = Field(min_length=1, max_length=300)
     year: int = Field(ge=1900, le=2100)
-    award: str = Field(default="", max_length=240)
+    award: str = Field(default="", max_length=500)
     external_url: str = ""
     blog_slug: str | None = Field(default=None, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class ProjectItem(BaseModel):
-    title: str = Field(min_length=1, max_length=240)
-    summary: str = Field(min_length=1, max_length=320)
-    period: str = Field(min_length=1, max_length=80)
+    title: str = Field(min_length=1, max_length=500)
+    summary: str = Field(min_length=1, max_length=1500)
+    period: str = Field(min_length=1, max_length=120)
     external_url: str = ""
     blog_slug: str | None = Field(default=None, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
