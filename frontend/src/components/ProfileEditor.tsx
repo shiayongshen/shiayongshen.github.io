@@ -376,7 +376,7 @@ export function ProfileEditor({
                   rows={4}
                   value={experience.summary}
                   onChange={(e) => updateExperience(index, { summary: e.target.value })}
-                  placeholder="Short summary"
+                  placeholder="Short summary (Markdown supported)"
                 />
               </div>
             ))}
@@ -463,7 +463,9 @@ export function ProfileEditor({
                     <span>{project.period || "Period"}</span>
                   </div>
                   <h3>{project.title || "Project title"}</h3>
-                  <p className="muted">{project.summary || "Project summary"}</p>
+                  <div className="markdown-body project-summary">
+                    <ReactMarkdown>{project.summary || "Project summary"}</ReactMarkdown>
+                  </div>
                 </article>
               ))}
             </div>
@@ -488,7 +490,9 @@ export function ProfileEditor({
                   </div>
                   <h3>{experience.role || "Role"}</h3>
                   <strong>{experience.company || "Company"}</strong>
-                  <p>{experience.summary || "Summary preview"}</p>
+                  <div className="markdown-body experience-summary">
+                    <ReactMarkdown>{experience.summary || "Summary preview"}</ReactMarkdown>
+                  </div>
                 </article>
               ))}
             </div>

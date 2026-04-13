@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "ShiaYongShen Personal Site API"
+    app_name: str = "Vincent Hsia Personal Site API"
     api_prefix: str = "/api"
     database_url: str = "sqlite:///./site.db"
     jwt_secret: str = Field("change-me-in-production", min_length=16)

@@ -291,7 +291,7 @@ wheels = [
 ]
 
 [[package]]
-name = "shiayongshen-github-io"
+name = "vincenthsia-github-io"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

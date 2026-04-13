@@ -101,10 +101,60 @@ input[type="file"] {
   color: var(--brand);
 }
 
+.page-shell {
+  position: relative;
+  overflow: clip;
+}
+
 .page,
 .stack {
   display: grid;
   gap: 20px;
+}
+
+.route-transition {
+  position: relative;
+  isolation: isolate;
+}
+
+.route-transition::before,
+.route-transition::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.route-transition::before {
+  inset: -40px auto auto -24px;
+  width: min(420px, 52vw);
+  height: 220px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 50%, rgba(255, 236, 179, 0.8), transparent 42%),
+    linear-gradient(110deg, rgba(255, 255, 255, 0.12), rgba(29, 107, 87, 0.18), rgba(212, 140, 86, 0.26));
+  filter: blur(14px);
+  transform: translate3d(-12%, 12%, 0) rotate(-10deg);
+  animation: route-sheen 840ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.route-transition::after {
+  inset: 0;
+  border-radius: 32px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.42), transparent 18%, transparent 82%, rgba(17, 71, 57, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 20%);
+  animation: route-frame 620ms ease-out;
+}
+
+.route-transition-content {
+  position: relative;
+  z-index: 1;
+  animation: route-content-in 620ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.route-transition-content > * {
+  animation: route-rise 760ms cubic-bezier(0.18, 0.8, 0.22, 1);
 }
 
 .editor-split {
@@ -332,9 +382,40 @@ input[type="file"] {
 .experience-card strong,
 .experience-card p,
 .experience-card .primary-link,
-.experience-card .label {
+.experience-card .label,
+.experience-summary {
   margin-left: 24px;
   margin-right: 24px;
+}
+
+.experience-summary {
+  line-height: 1.7;
+}
+
+.project-summary {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.experience-summary > :first-child {
+  margin-top: 0;
+}
+
+.project-summary > :first-child,
+.experience-summary > :first-child {
+  margin-top: 0;
+}
+
+.project-summary > :last-child,
+.experience-summary > :last-child {
+  margin-bottom: 0;
+}
+
+.project-summary ul,
+.project-summary ol,
+.experience-summary ul,
+.experience-summary ol {
+  padding-left: 1.25rem;
 }
 
 .experience-top {
@@ -583,6 +664,60 @@ textarea {
   color: var(--danger);
 }
 
+@keyframes route-sheen {
+  0% {
+    opacity: 0;
+    transform: translate3d(-12%, 14%, 0) rotate(-10deg) scale(0.94);
+  }
+
+  35% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(18%, -8%, 0) rotate(-6deg) scale(1.06);
+  }
+}
+
+@keyframes route-frame {
+  0% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes route-content-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes route-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 860px) {
   .topbar,
   .hero,
@@ -611,5 +746,19 @@ textarea {
 
   .preview-pane {
     position: static;
+  }
+
+  .route-transition::before {
+    width: min(300px, 68vw);
+    height: 180px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-transition::before,
+  .route-transition::after,
+  .route-transition-content,
+  .route-transition-content > * {
+    animation: none;
   }
 }

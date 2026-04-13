@@ -1,5 +1,5 @@
 [project]
-name = "shiayongshen-github-io"
+name = "vincenthsia-github-io"
 version = "0.1.0"
 description = "Personal website monorepo with FastAPI backend and React frontend"
 readme = "README.md"

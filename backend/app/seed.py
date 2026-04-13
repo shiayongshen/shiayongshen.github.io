@@ -25,7 +25,7 @@ def seed_database(db: Session) -> None:
     if not db.query(Profile).first():
         db.add(
             Profile(
-                full_name="Shia Yong Shen",
+                full_name="Vincent Hsia",
                 headline="Software Engineer / Builder",
                 intro_markdown=(
                     "我喜歡把想法快速做成可運行的產品，關注的主題包含產品設計、"
@@ -74,7 +74,7 @@ def seed_database(db: Session) -> None:
                     [
                         {
                             "title": "Human-Centered Tooling for LLM Workflows",
-                            "authors": "Shia Yong Shen, Advisor Name",
+                            "authors": "Vincent Hsia, Advisor Name",
                             "venue": "Manuscript in preparation",
                             "year": 2026,
                             "award": "",
@@ -83,7 +83,7 @@ def seed_database(db: Session) -> None:
                         },
                         {
                             "title": "Interactive AI Systems Reading Notes",
-                            "authors": "Shia Yong Shen",
+                            "authors": "Vincent Hsia",
                             "venue": "Research blog series",
                             "year": 2026,
                             "award": "",

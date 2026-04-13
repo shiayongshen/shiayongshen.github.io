@@ -8,14 +8,15 @@ type LayoutProps = {
 export function Layout({ isAdmin, onLogout }: LayoutProps) {
   const location = useLocation();
   const isWideEditor = location.pathname.startsWith("/admin/blog/");
+  const routeKey = `${location.pathname}${location.search}`;
 
   return (
     <div className={isWideEditor ? "shell shell-wide" : "shell"}>
       <header className="topbar">
         <Link to="/" className="brand">
-          <span className="brand-mark">SY</span>
+          <span className="brand-mark">VH</span>
           <div>
-            <strong>Shia Yong Shen</strong>
+            <strong>Vincent Hsia</strong>
             <p>Writing, building, shipping.</p>
           </div>
         </Link>
@@ -37,8 +38,12 @@ export function Layout({ isAdmin, onLogout }: LayoutProps) {
         </nav>
       </header>
 
-      <main className="page">
-        <Outlet />
+      <main className="page-shell">
+        <div key={routeKey} className="route-transition">
+          <div className="page route-transition-content">
+            <Outlet />
+          </div>
+        </div>
       </main>
     </div>
   );

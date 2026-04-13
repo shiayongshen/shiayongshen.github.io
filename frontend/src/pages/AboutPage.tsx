@@ -381,7 +381,7 @@ export function AboutPage({
                       rows={5}
                       value={draft.projects[index].summary}
                       onChange={(e) => updateProject(index, { summary: e.target.value })}
-                      placeholder="Project summary"
+                      placeholder="Project summary (Markdown supported)"
                     />
                     <div className="inline-form">
                       <input
@@ -413,7 +413,9 @@ export function AboutPage({
                       ) : (
                         <h3>{project.title}</h3>
                       )}
-                      <p className="muted">{project.summary}</p>
+                      <div className="markdown-body project-summary">
+                        <ReactMarkdown>{project.summary}</ReactMarkdown>
+                      </div>
                     </div>
                     <div className="action-row">
                       {project.blog_slug ? (
@@ -453,7 +455,6 @@ export function AboutPage({
         <div className="section-header">
           <div>
             <p className="eyebrow">Experience</p>
-            <h1>Selected work</h1>
           </div>
         </div>
         <div className="experience-grid">
@@ -545,7 +546,7 @@ export function AboutPage({
                       rows={5}
                       value={draft.experiences[index].summary}
                       onChange={(e) => updateExperience(index, { summary: e.target.value })}
-                      placeholder="Summary"
+                      placeholder="Summary (Markdown supported)"
                     />
                   </div>
                 </article>
@@ -565,7 +566,9 @@ export function AboutPage({
                 </div>
                 <h3>{experience.role}</h3>
                 <strong>{experience.company}</strong>
-                <p>{experience.summary}</p>
+                <div className="markdown-body experience-summary">
+                  <ReactMarkdown>{experience.summary}</ReactMarkdown>
+                </div>
                 {experience.story_slug ? <span className="primary-link">Read reflection</span> : null}
               </>
             );
