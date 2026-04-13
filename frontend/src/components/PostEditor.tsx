@@ -11,6 +11,9 @@ type PostEditorProps = {
   onCancel: () => void;
   onUploadImage: (file: File) => Promise<string>;
   onDeleteImage: (url: string) => Promise<void>;
+  inline?: boolean;
+  title?: string;
+  backLabel?: string;
 };
 
 export function PostEditor({
@@ -20,6 +23,9 @@ export function PostEditor({
   onCancel,
   onUploadImage,
   onDeleteImage,
+  inline = false,
+  title,
+  backLabel = "Back",
 }: PostEditorProps) {
   const baseDraft: DraftPost =
     post ?? {
@@ -126,11 +132,11 @@ export function PostEditor({
   }
 
   return (
-    <section className="panel stack">
+    <section className={`panel stack${inline ? " inline-post-editor" : ""}`}>
       <div className="modal-header">
-        <h2>{post ? "Edit Post" : "New Post"}</h2>
+        <h2>{title ?? (post ? "Edit Post" : "New Post")}</h2>
         <button className="text-button" onClick={onCancel}>
-          Back
+          {backLabel}
         </button>
       </div>
       <div className="editor-split">

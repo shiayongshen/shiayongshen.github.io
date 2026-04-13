@@ -1,4 +1,5 @@
-import type { ChangeEvent, ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import type { ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
@@ -15,6 +16,8 @@ type AboutPageProps = {
   onCancelEdit: () => void;
   onSaveEdit: () => Promise<void>;
   onDraftChange: (draft: ProfileDraft) => void;
+  onUploadImage: (file: File) => Promise<string>;
+  onDeleteImage: (url: string) => Promise<void>;
 };
 
 function updateArrayItem<T>(items: T[], index: number, patch: Partial<T>): T[] {
@@ -30,7 +33,10 @@ export function AboutPage({
   onCancelEdit,
   onSaveEdit,
   onDraftChange,
+  onUploadImage,
+  onDeleteImage,
 }: AboutPageProps) {
+  const [uploadingField, setUploadingField] = useState("");
   if (!profile) {
     return <div className="panel">Loading profile...</div>;
   }
@@ -63,6 +69,46 @@ export function AboutPage({
     updateField("experiences", updateArrayItem(draft.experiences, index, patch));
   }
 
+  async function uploadAvatar(file: File | undefined) {
+    if (!draft || !file) return;
+    setUploadingField("avatar");
+    try {
+      const url = await onUploadImage(file);
+      updateField("avatar_url", url);
+    } finally {
+      setUploadingField("");
+    }
+  }
+
+  async function clearAvatar() {
+    if (!draft?.avatar_url) return;
+    await onDeleteImage(draft.avatar_url);
+    updateField("avatar_url", "");
+  }
+
+  async function uploadExperienceImage(
+    index: number,
+    field: "company_logo_url" | "project_image_url",
+    file: File | undefined,
+  ) {
+    if (!file) return;
+    setUploadingField(`${field}-${index}`);
+    try {
+      const url = await onUploadImage(file);
+      updateExperience(index, { [field]: url });
+    } finally {
+      setUploadingField("");
+    }
+  }
+
+  async function clearExperienceImage(index: number, field: "company_logo_url" | "project_image_url") {
+    if (!draft) return;
+    const url = draft.experiences[index][field];
+    if (!url) return;
+    await onDeleteImage(url);
+    updateExperience(index, { [field]: "" });
+  }
+
   async function handleSave() {
     await onSaveEdit();
   }
@@ -83,6 +129,16 @@ export function AboutPage({
             {editable ? (
               <div className="stack inline-edit-stack">
                 <input value={draft.avatar_url} onChange={(e) => updateField("avatar_url", e.target.value)} placeholder="Avatar URL" />
+                <label className="upload-field">
+                  <span>Upload avatar</span>
+                  <input type="file" accept="image/*" onChange={(e) => uploadAvatar(e.target.files?.[0])} />
+                  {uploadingField === "avatar" ? <small>Uploading...</small> : null}
+                </label>
+                {draft.avatar_url ? (
+                  <button type="button" className="text-button" onClick={clearAvatar}>
+                    Remove avatar
+                  </button>
+                ) : null}
                 <input value={draft.location} onChange={(e) => updateField("location", e.target.value)} placeholder="Location" />
                 <input value={draft.email} onChange={(e) => updateField("email", e.target.value)} placeholder="Email" />
               </div>
@@ -442,11 +498,47 @@ export function AboutPage({
                       onChange={(e) => updateExperience(index, { company_logo_url: e.target.value })}
                       placeholder="Company logo URL"
                     />
+                    <label className="upload-field">
+                      <span>Upload logo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => uploadExperienceImage(index, "company_logo_url", e.target.files?.[0])}
+                      />
+                      {uploadingField === `company_logo_url-${index}` ? <small>Uploading...</small> : null}
+                    </label>
+                    {draft.experiences[index].company_logo_url ? (
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={() => clearExperienceImage(index, "company_logo_url")}
+                      >
+                        Remove logo
+                      </button>
+                    ) : null}
                     <input
                       value={draft.experiences[index].project_image_url}
                       onChange={(e) => updateExperience(index, { project_image_url: e.target.value })}
                       placeholder="Project image URL"
                     />
+                    <label className="upload-field">
+                      <span>Upload project image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => uploadExperienceImage(index, "project_image_url", e.target.files?.[0])}
+                      />
+                      {uploadingField === `project_image_url-${index}` ? <small>Uploading...</small> : null}
+                    </label>
+                    {draft.experiences[index].project_image_url ? (
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={() => clearExperienceImage(index, "project_image_url")}
+                      >
+                        Remove project image
+                      </button>
+                    ) : null}
                     <textarea
                       className="inline-edit-textarea"
                       rows={5}

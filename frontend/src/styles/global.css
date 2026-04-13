@@ -544,6 +544,15 @@ textarea {
   min-height: auto;
 }
 
+.inline-post-editor {
+  padding: 24px;
+}
+
+.guestbook-entry-editing {
+  border-color: rgba(29, 107, 87, 0.28);
+  background: rgba(255, 255, 255, 0.88);
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

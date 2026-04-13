@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
-import { GuestbookEditor } from "./components/GuestbookEditor";
 import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
 import { AdminDashboard } from "./pages/AdminDashboard";
@@ -16,14 +15,32 @@ function BlogPostRoute({
   posts,
   isAdmin,
   onEdit,
+  onSavePost,
+  onDeletePost,
+  onUploadImage,
+  onDeleteImage,
 }: {
   posts: BlogPost[];
   isAdmin: boolean;
   onEdit: (post: BlogPost) => void;
+  onSavePost: (payload: Omit<BlogPost, "created_at" | "updated_at">, originalSlug?: string) => Promise<void>;
+  onDeletePost: (slug: string) => Promise<void>;
+  onUploadImage: (file: File) => Promise<string>;
+  onDeleteImage: (url: string) => Promise<void>;
 }) {
   const { slug } = useParams();
   const post = posts.find((item) => item.slug === slug) ?? null;
-  return <PostPage post={post} isAdmin={isAdmin} onEdit={onEdit} />;
+  return (
+    <PostPage
+      post={post}
+      isAdmin={isAdmin}
+      onEdit={onEdit}
+      onSavePost={onSavePost}
+      onDeletePost={onDeletePost}
+      onUploadImage={onUploadImage}
+      onDeleteImage={onDeleteImage}
+    />
+  );
 }
 
 function BlogEditorRoute({
@@ -65,7 +82,6 @@ export default function App() {
   const [guestbookEntries, setGuestbookEntries] = useState<GuestbookEntry[]>([]);
   const [token, setToken] = useState<string>(() => localStorage.getItem("admin_token") ?? "");
   const [profileDraft, setProfileDraft] = useState<Omit<Profile, "id" | "updated_at"> | null>(null);
-  const [editingGuestbook, setEditingGuestbook] = useState<GuestbookEntry | null>(null);
 
   const isAdmin = Boolean(token);
 
@@ -205,6 +221,8 @@ export default function App() {
                 onCancelEdit={cancelProfileEdit}
                 onSaveEdit={() => handleSaveProfile()}
                 onDraftChange={setProfileDraft}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
               />
             }
           />
@@ -215,7 +233,11 @@ export default function App() {
                 posts={posts}
                 isAdmin={isAdmin}
                 onCreate={() => navigate("/admin/blog/new")}
-                onEdit={(post) => navigate(`/admin/blog/${post.slug}/edit`)}
+                onEdit={() => {}}
+                onSavePost={handleSavePost}
+                onDeletePost={handleDeletePost}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
               />
             }
           />
@@ -225,7 +247,11 @@ export default function App() {
               <BlogPostRoute
                 posts={posts}
                 isAdmin={isAdmin}
-                onEdit={(post) => navigate(`/admin/blog/${post.slug}/edit`)}
+                onEdit={() => {}}
+                onSavePost={handleSavePost}
+                onDeletePost={handleDeletePost}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
               />
             }
           />
@@ -236,7 +262,8 @@ export default function App() {
                 entries={guestbookEntries}
                 isAdmin={isAdmin}
                 onSubmit={handleGuestbookSubmit}
-                onEdit={(entry) => setEditingGuestbook(entry)}
+                onSaveEntry={handleSaveGuestbook}
+                onDeleteEntry={handleDeleteGuestbook}
               />
             }
           />
@@ -273,6 +300,8 @@ export default function App() {
                   }}
                   onSaveEdit={() => handleSaveProfile()}
                   onDraftChange={setProfileDraft}
+                  onUploadImage={handleUploadImage}
+                  onDeleteImage={handleDeleteImage}
                 />
               ) : (
                 <Navigate to="/login" replace />
@@ -315,14 +344,6 @@ export default function App() {
         </Route>
       </Routes>
 
-      {editingGuestbook ? (
-        <GuestbookEditor
-          entry={editingGuestbook}
-          onSave={handleSaveGuestbook}
-          onDelete={handleDeleteGuestbook}
-          onClose={() => setEditingGuestbook(null)}
-        />
-      ) : null}
     </>
   );
 }

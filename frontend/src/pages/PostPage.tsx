@@ -1,15 +1,45 @@
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { PostEditor } from "../components/PostEditor";
 import type { BlogPost } from "../lib/types";
 
 type PostPageProps = {
   post: BlogPost | null;
   isAdmin: boolean;
   onEdit: (post: BlogPost) => void;
+  onSavePost: (payload: Omit<BlogPost, "created_at" | "updated_at">, originalSlug?: string) => Promise<void>;
+  onDeletePost: (slug: string) => Promise<void>;
+  onUploadImage: (file: File) => Promise<string>;
+  onDeleteImage: (url: string) => Promise<void>;
 };
 
-export function PostPage({ post, isAdmin, onEdit }: PostPageProps) {
+export function PostPage({ post, isAdmin, onEdit, onSavePost, onDeletePost, onUploadImage, onDeleteImage }: PostPageProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
   if (!post) {
     return <div className="panel">Loading article...</div>;
+  }
+
+  if (isEditing) {
+    return (
+      <PostEditor
+        post={post}
+        inline
+        title={`Editing ${post.title}`}
+        backLabel="Close"
+        onSave={async (payload, originalSlug) => {
+          await onSavePost(payload, originalSlug);
+          setIsEditing(false);
+        }}
+        onDelete={async (slug) => {
+          await onDeletePost(slug);
+          setIsEditing(false);
+        }}
+        onCancel={() => setIsEditing(false)}
+        onUploadImage={onUploadImage}
+        onDeleteImage={onDeleteImage}
+      />
+    );
   }
 
   return (
@@ -31,7 +61,13 @@ export function PostPage({ post, isAdmin, onEdit }: PostPageProps) {
       </div>
       {isAdmin ? (
         <div className="action-row">
-          <button className="primary-button" onClick={() => onEdit(post)}>
+          <button
+            className="primary-button"
+            onClick={() => {
+              onEdit(post);
+              setIsEditing(true);
+            }}
+          >
             Edit This Post
           </button>
         </div>

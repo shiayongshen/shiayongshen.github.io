@@ -5,13 +5,16 @@ type GuestbookPageProps = {
   entries: GuestbookEntry[];
   isAdmin: boolean;
   onSubmit: (name: string, message: string) => Promise<void>;
-  onEdit: (entry: GuestbookEntry) => void;
+  onSaveEntry: (entryId: number, payload: Pick<GuestbookEntry, "name" | "message" | "approved">) => Promise<void>;
+  onDeleteEntry: (entryId: number) => Promise<void>;
 };
 
-export function GuestbookPage({ entries, isAdmin, onSubmit, onEdit }: GuestbookPageProps) {
+export function GuestbookPage({ entries, isAdmin, onSubmit, onSaveEntry, onDeleteEntry }: GuestbookPageProps) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
+  const [drafts, setDrafts] = useState<Record<number, Pick<GuestbookEntry, "name" | "message" | "approved">>>({});
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,6 +26,40 @@ export function GuestbookPage({ entries, isAdmin, onSubmit, onEdit }: GuestbookP
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function startEditing(entry: GuestbookEntry) {
+    setEditingEntryId(entry.id);
+    setDrafts((current) => ({
+      ...current,
+      [entry.id]: {
+        name: entry.name,
+        message: entry.message,
+        approved: entry.approved,
+      },
+    }));
+  }
+
+  function updateDraft(entryId: number, patch: Partial<Pick<GuestbookEntry, "name" | "message" | "approved">>) {
+    setDrafts((current) => ({
+      ...current,
+      [entryId]: {
+        ...current[entryId],
+        ...patch,
+      },
+    }));
+  }
+
+  async function saveEntry(entryId: number) {
+    const draft = drafts[entryId];
+    if (!draft) return;
+    await onSaveEntry(entryId, draft);
+    setEditingEntryId(null);
+  }
+
+  async function deleteEntry(entryId: number) {
+    await onDeleteEntry(entryId);
+    setEditingEntryId(null);
   }
 
   return (
@@ -48,22 +85,59 @@ export function GuestbookPage({ entries, isAdmin, onSubmit, onEdit }: GuestbookP
       </section>
 
       <section className="stack">
-        {entries.map((entry) => (
-          <article key={entry.id} className="panel">
-            <div className="post-meta">
-              <strong>{entry.name}</strong>
-              <span>{new Date(entry.created_at).toLocaleDateString()}</span>
-            </div>
-            <p>{entry.message}</p>
-            {isAdmin ? (
+        {entries.map((entry) => {
+          const isEditing = editingEntryId === entry.id;
+          const draft = drafts[entry.id];
+
+          return isEditing && draft ? (
+            <article key={entry.id} className="panel stack guestbook-entry-editing">
+              <div className="post-meta">
+                <strong>Editing entry</strong>
+                <span>{new Date(entry.created_at).toLocaleDateString()}</span>
+              </div>
+              <input value={draft.name} onChange={(event) => updateDraft(entry.id, { name: event.target.value })} />
+              <textarea
+                value={draft.message}
+                onChange={(event) => updateDraft(entry.id, { message: event.target.value })}
+                rows={6}
+              />
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={draft.approved}
+                  onChange={(event) => updateDraft(entry.id, { approved: event.target.checked })}
+                />
+                Approved
+              </label>
               <div className="action-row">
-                <button className="text-button" onClick={() => onEdit(entry)}>
-                  Edit
+                <button className="primary-button" onClick={() => saveEntry(entry.id)}>
+                  Save
+                </button>
+                <button type="button" className="danger-button" onClick={() => deleteEntry(entry.id)}>
+                  Delete
+                </button>
+                <button type="button" className="text-button" onClick={() => setEditingEntryId(null)}>
+                  Cancel
                 </button>
               </div>
-            ) : null}
-          </article>
-        ))}
+            </article>
+          ) : (
+            <article key={entry.id} className="panel">
+              <div className="post-meta">
+                <strong>{entry.name}</strong>
+                <span>{new Date(entry.created_at).toLocaleDateString()}</span>
+              </div>
+              <p>{entry.message}</p>
+              {isAdmin ? (
+                <div className="action-row">
+                  <button className="text-button" onClick={() => startEditing(entry)}>
+                    Edit
+                  </button>
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </section>
     </div>
   );
