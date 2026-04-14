@@ -43,15 +43,51 @@ export function AboutPage({
     if (typeof window === "undefined" || isEditing) return false;
     return window.sessionStorage.getItem("home_intro_seen") !== "true";
   });
+  const [isLandingIntroClosing, setIsLandingIntroClosing] = useState(false);
   const editable = isEditing && draft;
   const view = profile ? (editable ? draft : profile) : null;
   const latestPosts = posts.filter((post) => post.published).slice(0, 3);
 
   useEffect(() => {
     if (editable || !showLandingIntro) return;
-    window.sessionStorage.setItem("home_intro_seen", "true");
-    const timer = window.setTimeout(() => setShowLandingIntro(false), 1700);
-    return () => window.clearTimeout(timer);
+    function dismissIntro() {
+      setIsLandingIntroClosing(true);
+      window.sessionStorage.setItem("home_intro_seen", "true");
+      window.setTimeout(() => {
+        setShowLandingIntro(false);
+        setIsLandingIntroClosing(false);
+      }, 720);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchmove", dismissIntro);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("keydown", handleKeyDown);
+    }
+
+    function handleWheel(event: WheelEvent) {
+      if (Math.abs(event.deltaY) > 0) dismissIntro();
+    }
+
+    function handleScroll() {
+      if (window.scrollY > 0) dismissIntro();
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (["ArrowDown", "PageDown", "Space", "Home", "End"].includes(event.code)) {
+        dismissIntro();
+      }
+    }
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchmove", dismissIntro, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchmove", dismissIntro);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [editable, showLandingIntro]);
 
   if (!profile || !view) {
@@ -130,10 +166,11 @@ export function AboutPage({
   return (
     <div className={`stack${showLandingIntro ? " home-intro-active" : ""}`}>
       {showLandingIntro ? (
-        <div className="home-intro" aria-hidden="true">
+        <div className={`home-intro${isLandingIntroClosing ? " home-intro-closing" : ""}`} aria-hidden="true">
           <div className="home-intro-mark">VH</div>
           <p className="home-intro-kicker">Vincent Hsia</p>
           <h1>Writing, building, shipping.</h1>
+          <span className="home-intro-scroll-hint">Scroll to enter</span>
         </div>
       ) : null}
       <section className="hero">

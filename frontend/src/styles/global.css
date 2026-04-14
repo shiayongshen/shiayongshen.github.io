@@ -130,7 +130,7 @@ input[type="file"] {
     linear-gradient(135deg, rgba(17, 24, 20, 0.92), rgba(28, 43, 37, 0.88));
   color: #fff9f1;
   text-align: center;
-  animation: home-intro-fade 1700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  overflow: hidden;
 }
 
 .home-intro::before {
@@ -144,9 +144,14 @@ input[type="file"] {
   animation: home-intro-sheen 1200ms cubic-bezier(0.16, 0.84, 0.26, 1) 180ms both;
 }
 
+.home-intro-closing {
+  animation: home-intro-fade 720ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
 .home-intro-mark,
 .home-intro-kicker,
-.home-intro h1 {
+.home-intro h1,
+.home-intro-scroll-hint {
   position: relative;
   z-index: 1;
 }
@@ -182,6 +187,17 @@ input[type="file"] {
   font-size: clamp(2rem, 7vw, 4.8rem);
   line-height: 0.94;
   animation: home-intro-rise 980ms cubic-bezier(0.16, 0.84, 0.26, 1) 140ms both;
+}
+
+.home-intro-scroll-hint {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  animation:
+    home-intro-rise 1040ms cubic-bezier(0.16, 0.84, 0.26, 1) 220ms both,
+    home-intro-pulse 1800ms ease-in-out 1200ms infinite;
 }
 
 .route-transition {
@@ -807,8 +823,7 @@ textarea {
 }
 
 @keyframes home-intro-fade {
-  0%,
-  72% {
+  0% {
     opacity: 1;
     visibility: visible;
   }
@@ -816,6 +831,19 @@ textarea {
   100% {
     opacity: 0;
     visibility: hidden;
+  }
+}
+
+@keyframes home-intro-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: translateY(6px);
   }
 }
 
@@ -903,6 +931,7 @@ textarea {
   .home-intro-mark,
   .home-intro-kicker,
   .home-intro h1,
+  .home-intro-scroll-hint,
   .route-transition::before,
   .route-transition::after,
   .route-transition-content,
