@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, Up
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from PIL import Image, ImageOps
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from .auth import authenticate_admin, create_access_token, get_current_admin
@@ -40,9 +41,35 @@ app.add_middleware(
 )
 
 
+def ensure_profile_schema() -> None:
+    inspector = inspect(engine)
+    if "profiles" not in inspector.get_table_names():
+        return
+    columns = {column["name"] for column in inspector.get_columns("profiles")}
+    if "overview_section_order_json" in columns:
+        return
+    default_order = '["research_interests", "skills", "publications", "projects"]'
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "ALTER TABLE profiles "
+                "ADD COLUMN overview_section_order_json TEXT "
+                f"DEFAULT '{default_order}'"
+            )
+        )
+        connection.execute(
+            text(
+                "UPDATE profiles "
+                f"SET overview_section_order_json = '{default_order}' "
+                "WHERE overview_section_order_json IS NULL"
+            )
+        )
+
+
 @app.on_event("startup")
 def on_startup() -> None:
     Base.metadata.create_all(bind=engine)
+    ensure_profile_schema()
     with SessionLocal() as db:
         seed_database(db)
 
@@ -76,6 +103,7 @@ def serialize_profile(profile: Profile) -> ProfileRead:
         research_interests_markdown=profile.research_interests_markdown,
         publications=json.loads(profile.publications_json),
         projects=json.loads(profile.projects_json),
+        overview_section_order=json.loads(profile.overview_section_order_json),
         skills_markdown=profile.skills_markdown,
         updated_at=profile.updated_at,
     )
@@ -285,6 +313,7 @@ def admin_update_profile(
         [project.model_dump() for project in payload.projects],
         ensure_ascii=False,
     )
+    profile.overview_section_order_json = json.dumps(payload.overview_section_order, ensure_ascii=False)
     profile.skills_markdown = payload.skills_markdown
     db.commit()
     db.refresh(profile)

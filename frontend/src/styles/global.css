@@ -453,6 +453,64 @@ input[type="file"] {
   font-size: 1.15rem;
 }
 
+.overview-masonry {
+  column-count: 2;
+  column-gap: 20px;
+}
+
+.overview-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.overview-editor-item {
+  display: grid;
+  gap: 12px;
+}
+
+.overview-editor-item.is-dragging {
+  opacity: 0.58;
+}
+
+.overview-editor-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px dashed rgba(29, 107, 87, 0.28);
+  border-radius: 18px;
+  background: rgba(255, 252, 246, 0.74);
+  color: var(--brand-strong);
+  cursor: grab;
+}
+
+.overview-editor-handle span {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+}
+
+.overview-editor-handle small {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.overview-editor-item:active .overview-editor-handle {
+  cursor: grabbing;
+}
+
+.overview-masonry-item {
+  break-inside: avoid;
+  margin-bottom: 20px;
+}
+
+.overview-masonry-item .panel {
+  margin: 0;
+}
+
 .publication-title-link,
 .publication-card h3 {
   margin: 0;
@@ -912,6 +970,14 @@ textarea {
   }
 
   .latest-posts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-masonry {
+    column-count: 1;
+  }
+
+  .overview-editor-grid {
     grid-template-columns: 1fr;
   }
 

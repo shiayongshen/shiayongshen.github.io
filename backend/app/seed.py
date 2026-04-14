@@ -112,6 +112,10 @@ def seed_database(db: Session) -> None:
                     ],
                     ensure_ascii=False,
                 ),
+                overview_section_order_json=json.dumps(
+                    ["research_interests", "skills", "publications", "projects"],
+                    ensure_ascii=False,
+                ),
                 skills_markdown=(
                     "- Python / FastAPI\n"
                     "- TypeScript / React\n"

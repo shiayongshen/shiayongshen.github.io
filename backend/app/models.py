@@ -36,6 +36,10 @@ class Profile(Base):
     research_interests_markdown: Mapped[str] = mapped_column(Text, default="")
     publications_json: Mapped[str] = mapped_column(Text, default="[]")
     projects_json: Mapped[str] = mapped_column(Text, default="[]")
+    overview_section_order_json: Mapped[str] = mapped_column(
+        Text,
+        default='["research_interests", "skills", "publications", "projects"]',
+    )
     skills_markdown: Mapped[str] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 

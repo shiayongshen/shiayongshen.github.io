@@ -29,6 +29,7 @@ export function ProfileEditor({
     research_interests_markdown: profile.research_interests_markdown,
     publications: profile.publications,
     projects: profile.projects,
+    overview_section_order: profile.overview_section_order,
     skills_markdown: profile.skills_markdown,
   });
   const [uploadingField, setUploadingField] = useState("");

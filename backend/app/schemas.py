@@ -62,6 +62,9 @@ class ProfileBase(BaseModel):
     research_interests_markdown: str = ""
     publications: list[PublicationItem] = Field(default_factory=list)
     projects: list[ProjectItem] = Field(default_factory=list)
+    overview_section_order: list[str] = Field(
+        default_factory=lambda: ["research_interests", "skills", "publications", "projects"]
+    )
     skills_markdown: str
 
 

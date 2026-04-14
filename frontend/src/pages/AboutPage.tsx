@@ -6,6 +6,53 @@ import type { BlogPost, ExperienceItem, LinkItem, Profile, ProjectItem, Publicat
 import { MarkdownCard } from "../components/MarkdownCard";
 
 type ProfileDraft = Omit<Profile, "id" | "updated_at">;
+type OverviewSectionId = "research_interests" | "skills" | "publications" | "projects";
+type OverviewSection = {
+  id: OverviewSectionId;
+  title: string;
+};
+
+const DEFAULT_OVERVIEW_SECTION_ORDER: OverviewSectionId[] = [
+  "research_interests",
+  "skills",
+  "publications",
+  "projects",
+];
+
+const OVERVIEW_SECTIONS: OverviewSection[] = [
+  { id: "research_interests", title: "Research Interests" },
+  { id: "skills", title: "Skills" },
+  { id: "publications", title: "Publications" },
+  { id: "projects", title: "Projects" },
+];
+
+function normalizeOverviewSectionOrder(order: string[] | undefined): OverviewSectionId[] {
+  const unique = new Set<OverviewSectionId>();
+  for (const item of order ?? []) {
+    if (DEFAULT_OVERVIEW_SECTION_ORDER.includes(item as OverviewSectionId)) {
+      unique.add(item as OverviewSectionId);
+    }
+  }
+  for (const item of DEFAULT_OVERVIEW_SECTION_ORDER) {
+    unique.add(item);
+  }
+  return Array.from(unique);
+}
+
+function moveOverviewSection(
+  order: OverviewSectionId[],
+  fromId: OverviewSectionId,
+  toId: OverviewSectionId,
+): OverviewSectionId[] {
+  if (fromId === toId) return order;
+  const next = [...order];
+  const fromIndex = next.indexOf(fromId);
+  const toIndex = next.indexOf(toId);
+  if (fromIndex === -1 || toIndex === -1) return order;
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+  return next;
+}
 
 type AboutPageProps = {
   profile: Profile | null;
@@ -39,6 +86,7 @@ export function AboutPage({
   onDeleteImage,
 }: AboutPageProps) {
   const [uploadingField, setUploadingField] = useState("");
+  const [draggedSectionId, setDraggedSectionId] = useState<OverviewSectionId | null>(null);
   const [showLandingIntro, setShowLandingIntro] = useState(() => {
     if (typeof window === "undefined" || isEditing) return false;
     return window.sessionStorage.getItem("home_intro_seen") !== "true";
@@ -47,6 +95,7 @@ export function AboutPage({
   const editable = isEditing && draft;
   const view = profile ? (editable ? draft : profile) : null;
   const latestPosts = posts.filter((post) => post.published).slice(0, 3);
+  const overviewSectionOrder = normalizeOverviewSectionOrder(view?.overview_section_order);
 
   useEffect(() => {
     if (editable || !showLandingIntro) return;
@@ -93,6 +142,7 @@ export function AboutPage({
   if (!profile || !view) {
     return <div className="panel">Loading profile...</div>;
   }
+  const currentView = view;
 
   function updateField<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
     if (!draft) return;
@@ -117,6 +167,274 @@ export function AboutPage({
   function updateExperience(index: number, patch: Partial<ExperienceItem>) {
     if (!draft) return;
     updateField("experiences", updateArrayItem(draft.experiences, index, patch));
+  }
+
+  function updateOverviewSectionOrder(nextOrder: OverviewSectionId[]) {
+    if (!draft) return;
+    updateField("overview_section_order", nextOrder);
+  }
+
+  function renderOverviewEditSection(sectionId: OverviewSectionId) {
+    if (!draft) return null;
+
+    if (sectionId === "research_interests") {
+      return (
+        <section className="panel stack">
+          <div className="section-heading">
+            <span>Research Interests</span>
+          </div>
+          <textarea
+            className="inline-edit-textarea"
+            rows={10}
+            value={draft.research_interests_markdown}
+            onChange={(e) => updateField("research_interests_markdown", e.target.value)}
+          />
+        </section>
+      );
+    }
+
+    if (sectionId === "skills") {
+      return (
+        <section className="panel stack">
+          <div className="section-heading">
+            <span>Skills</span>
+          </div>
+          <textarea
+            className="inline-edit-textarea"
+            rows={10}
+            value={draft.skills_markdown}
+            onChange={(e) => updateField("skills_markdown", e.target.value)}
+          />
+        </section>
+      );
+    }
+
+    if (sectionId === "publications") {
+      return (
+        <section className="panel">
+          <div className="section-heading">
+            <span>Publications</span>
+          </div>
+          <div className="stack">
+            {currentView.publications.map((publication, index) => (
+              <article key={`${publication.title}-${index}`} className="publication-card publication-card-editing">
+                <div className="stack inline-edit-stack">
+                  <div className="inline-form">
+                    <input
+                      value={draft.publications[index].venue}
+                      onChange={(e) => updatePublication(index, { venue: e.target.value })}
+                      placeholder="Venue"
+                    />
+                    <input
+                      value={draft.publications[index].year}
+                      onChange={(e) => updatePublication(index, { year: Number(e.target.value) || new Date().getFullYear() })}
+                      placeholder="Year"
+                    />
+                  </div>
+                  <input
+                    value={draft.publications[index].title}
+                    onChange={(e) => updatePublication(index, { title: e.target.value })}
+                    placeholder="Title"
+                  />
+                  <input
+                    value={draft.publications[index].authors}
+                    onChange={(e) => updatePublication(index, { authors: e.target.value })}
+                    placeholder="Authors"
+                  />
+                  <input
+                    value={draft.publications[index].award}
+                    onChange={(e) => updatePublication(index, { award: e.target.value })}
+                    placeholder="Award / Honor"
+                  />
+                  <div className="inline-form">
+                    <input
+                      value={draft.publications[index].blog_slug ?? ""}
+                      onChange={(e) => updatePublication(index, { blog_slug: e.target.value || null })}
+                      placeholder="Linked blog slug"
+                    />
+                    <input
+                      value={draft.publications[index].external_url}
+                      onChange={(e) => updatePublication(index, { external_url: e.target.value })}
+                      placeholder="External URL"
+                    />
+                  </div>
+                </div>
+              </article>
+            ))}
+            <button
+              type="button"
+              className="text-button"
+              onClick={() =>
+                updateField("publications", [
+                  ...draft.publications,
+                  { title: "", authors: "", venue: "", year: new Date().getFullYear(), award: "", external_url: "", blog_slug: null },
+                ])
+              }
+            >
+              Add Publication
+            </button>
+          </div>
+        </section>
+      );
+    }
+
+    return (
+      <section className="panel">
+        <div className="section-heading">
+          <span>Projects</span>
+        </div>
+        <div className="stack">
+          {currentView.projects.map((project, index) => (
+            <article key={`${project.title}-${index}`} className="publication-card publication-card-editing">
+              <div className="stack inline-edit-stack">
+                <div className="inline-form">
+                  <input
+                    value={draft.projects[index].title}
+                    onChange={(e) => updateProject(index, { title: e.target.value })}
+                    placeholder="Project title"
+                  />
+                  <input
+                    value={draft.projects[index].period}
+                    onChange={(e) => updateProject(index, { period: e.target.value })}
+                    placeholder="Period"
+                  />
+                </div>
+                <textarea
+                  className="inline-edit-textarea"
+                  rows={5}
+                  value={draft.projects[index].summary}
+                  onChange={(e) => updateProject(index, { summary: e.target.value })}
+                  placeholder="Project summary (Markdown supported)"
+                />
+                <div className="inline-form">
+                  <input
+                    value={draft.projects[index].blog_slug ?? ""}
+                    onChange={(e) => updateProject(index, { blog_slug: e.target.value || null })}
+                    placeholder="Linked blog slug"
+                  />
+                  <input
+                    value={draft.projects[index].external_url}
+                    onChange={(e) => updateProject(index, { external_url: e.target.value })}
+                    placeholder="External URL"
+                  />
+                </div>
+              </div>
+            </article>
+          ))}
+          <button
+            type="button"
+            className="text-button"
+            onClick={() =>
+              updateField("projects", [
+                ...draft.projects,
+                { title: "", summary: "", period: "", external_url: "", blog_slug: null },
+              ])
+            }
+          >
+            Add Project
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  function renderOverviewDisplaySection(sectionId: OverviewSectionId) {
+    if (sectionId === "research_interests") {
+      return <MarkdownCard title="Research Interests" content={currentView.research_interests_markdown} />;
+    }
+    if (sectionId === "skills") {
+      return <MarkdownCard title="Skills" content={currentView.skills_markdown} />;
+    }
+    if (sectionId === "publications") {
+      return (
+        <section className="panel">
+          <div className="section-heading">
+            <span>Publications</span>
+          </div>
+          <div className="stack">
+            {currentView.publications.map((publication, index) => (
+              <article key={`${publication.title}-${index}`} className="publication-card">
+                <div className="stack publication-copy">
+                  <div className="post-meta">
+                    <span>{publication.venue}</span>
+                    <span>{publication.year}</span>
+                  </div>
+                  {publication.blog_slug ? (
+                    <Link to={`/blog/${publication.blog_slug}`} className="publication-title-link">
+                      {publication.title}
+                    </Link>
+                  ) : publication.external_url ? (
+                    <a href={publication.external_url} target="_blank" rel="noreferrer" className="publication-title-link">
+                      {publication.title}
+                    </a>
+                  ) : (
+                    <h3>{publication.title}</h3>
+                  )}
+                  <p className="muted">{publication.authors}</p>
+                  {publication.award ? <p className="award-badge">{publication.award}</p> : null}
+                </div>
+                <div className="action-row">
+                  {publication.blog_slug ? (
+                    <Link to={`/blog/${publication.blog_slug}`} className="primary-link">
+                      Read note
+                    </Link>
+                  ) : null}
+                  {publication.external_url ? (
+                    <a href={publication.external_url} target="_blank" rel="noreferrer" className="primary-link">
+                      External
+                    </a>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    return (
+      <section className="panel">
+        <div className="section-heading">
+          <span>Projects</span>
+        </div>
+        <div className="stack">
+          {currentView.projects.map((project, index) => (
+            <article key={`${project.title}-${index}`} className="publication-card">
+              <div className="stack publication-copy">
+                <div className="post-meta">
+                  <span>{project.period}</span>
+                </div>
+                {project.blog_slug ? (
+                  <Link to={`/blog/${project.blog_slug}`} className="publication-title-link">
+                    {project.title}
+                  </Link>
+                ) : project.external_url ? (
+                  <a href={project.external_url} target="_blank" rel="noreferrer" className="publication-title-link">
+                    {project.title}
+                  </a>
+                ) : (
+                  <h3>{project.title}</h3>
+                )}
+                <div className="markdown-body project-summary">
+                  <ReactMarkdown>{project.summary}</ReactMarkdown>
+                </div>
+              </div>
+              <div className="action-row">
+                {project.blog_slug ? (
+                  <Link to={`/blog/${project.blog_slug}`} className="primary-link">
+                    Read note
+                  </Link>
+                ) : null}
+                {project.external_url ? (
+                  <a href={project.external_url} target="_blank" rel="noreferrer" className="primary-link">
+                    External
+                  </a>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   async function uploadAvatar(file: File | undefined) {
@@ -315,237 +633,51 @@ export function AboutPage({
         </section>
       ) : null}
 
-      <div className="grid-two">
-        {editable ? (
-          <section className="panel stack">
-            <div className="section-heading">
-              <span>Research Interests</span>
+      {editable ? (
+        <section className="stack">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Overview Layout</p>
+              <h1>拖曳調整區塊順序</h1>
             </div>
-            <textarea
-              className="inline-edit-textarea"
-              rows={10}
-              value={draft.research_interests_markdown}
-              onChange={(e) => updateField("research_interests_markdown", e.target.value)}
-            />
-          </section>
-        ) : (
-          <MarkdownCard title="Research Interests" content={view.research_interests_markdown} />
-        )}
-        {editable ? (
-          <section className="panel stack">
-            <div className="section-heading">
-              <span>Skills</span>
-            </div>
-            <textarea
-              className="inline-edit-textarea"
-              rows={10}
-              value={draft.skills_markdown}
-              onChange={(e) => updateField("skills_markdown", e.target.value)}
-            />
-          </section>
-        ) : (
-          <MarkdownCard title="Skills" content={view.skills_markdown} />
-        )}
-      </div>
-
-      <div className="grid-two">
-        <section className="panel">
-          <div className="section-heading">
-            <span>Publications</span>
           </div>
-          <div className="stack">
-            {view.publications.map((publication, index) => (
-              <article key={`${publication.title}-${index}`} className={`publication-card${editable ? " publication-card-editing" : ""}`}>
-                {editable ? (
-                  <div className="stack inline-edit-stack">
-                    <div className="inline-form">
-                      <input
-                        value={draft.publications[index].venue}
-                        onChange={(e) => updatePublication(index, { venue: e.target.value })}
-                        placeholder="Venue"
-                      />
-                      <input
-                        value={draft.publications[index].year}
-                        onChange={(e) => updatePublication(index, { year: Number(e.target.value) || new Date().getFullYear() })}
-                        placeholder="Year"
-                      />
-                    </div>
-                    <input
-                      value={draft.publications[index].title}
-                      onChange={(e) => updatePublication(index, { title: e.target.value })}
-                      placeholder="Title"
-                    />
-                    <input
-                      value={draft.publications[index].authors}
-                      onChange={(e) => updatePublication(index, { authors: e.target.value })}
-                      placeholder="Authors"
-                    />
-                    <input
-                      value={draft.publications[index].award}
-                      onChange={(e) => updatePublication(index, { award: e.target.value })}
-                      placeholder="Award / Honor"
-                    />
-                    <div className="inline-form">
-                      <input
-                        value={draft.publications[index].blog_slug ?? ""}
-                        onChange={(e) => updatePublication(index, { blog_slug: e.target.value || null })}
-                        placeholder="Linked blog slug"
-                      />
-                      <input
-                        value={draft.publications[index].external_url}
-                        onChange={(e) => updatePublication(index, { external_url: e.target.value })}
-                        placeholder="External URL"
-                      />
-                    </div>
+          <div className="overview-editor-grid">
+            {overviewSectionOrder.map((sectionId) => {
+              const section = OVERVIEW_SECTIONS.find((item) => item.id === sectionId);
+              if (!section) return null;
+              return (
+                <div
+                  key={section.id}
+                  className={`overview-editor-item${draggedSectionId === section.id ? " is-dragging" : ""}`}
+                  draggable
+                  onDragStart={() => setDraggedSectionId(section.id)}
+                  onDragEnd={() => setDraggedSectionId(null)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => {
+                    if (!draggedSectionId || draggedSectionId === section.id) return;
+                    updateOverviewSectionOrder(moveOverviewSection(overviewSectionOrder, draggedSectionId, section.id));
+                    setDraggedSectionId(null);
+                  }}
+                >
+                  <div className="overview-editor-handle">
+                    <span>{section.title}</span>
+                    <small>Drag to reorder</small>
                   </div>
-                ) : (
-                  <>
-                    <div className="stack publication-copy">
-                      <div className="post-meta">
-                        <span>{publication.venue}</span>
-                        <span>{publication.year}</span>
-                      </div>
-                      {publication.blog_slug ? (
-                        <Link to={`/blog/${publication.blog_slug}`} className="publication-title-link">
-                          {publication.title}
-                        </Link>
-                      ) : publication.external_url ? (
-                        <a href={publication.external_url} target="_blank" rel="noreferrer" className="publication-title-link">
-                          {publication.title}
-                        </a>
-                      ) : (
-                        <h3>{publication.title}</h3>
-                      )}
-                      <p className="muted">{publication.authors}</p>
-                      {publication.award ? <p className="award-badge">{publication.award}</p> : null}
-                    </div>
-                    <div className="action-row">
-                      {publication.blog_slug ? (
-                        <Link to={`/blog/${publication.blog_slug}`} className="primary-link">
-                          Read note
-                        </Link>
-                      ) : null}
-                      {publication.external_url ? (
-                        <a href={publication.external_url} target="_blank" rel="noreferrer" className="primary-link">
-                          External
-                        </a>
-                      ) : null}
-                    </div>
-                  </>
-                )}
-              </article>
-            ))}
-            {editable ? (
-              <button
-                type="button"
-                className="text-button"
-                onClick={() =>
-                  updateField("publications", [
-                    ...draft.publications,
-                    { title: "", authors: "", venue: "", year: new Date().getFullYear(), award: "", external_url: "", blog_slug: null },
-                  ])
-                }
-              >
-                Add Publication
-              </button>
-            ) : null}
+                  {renderOverviewEditSection(section.id)}
+                </div>
+              );
+            })}
           </div>
         </section>
-        <section className="panel">
-          <div className="section-heading">
-            <span>Projects</span>
-          </div>
-          <div className="stack">
-            {view.projects.map((project, index) => (
-              <article key={`${project.title}-${index}`} className={`publication-card${editable ? " publication-card-editing" : ""}`}>
-                {editable ? (
-                  <div className="stack inline-edit-stack">
-                    <div className="inline-form">
-                      <input
-                        value={draft.projects[index].title}
-                        onChange={(e) => updateProject(index, { title: e.target.value })}
-                        placeholder="Project title"
-                      />
-                      <input
-                        value={draft.projects[index].period}
-                        onChange={(e) => updateProject(index, { period: e.target.value })}
-                        placeholder="Period"
-                      />
-                    </div>
-                    <textarea
-                      className="inline-edit-textarea"
-                      rows={5}
-                      value={draft.projects[index].summary}
-                      onChange={(e) => updateProject(index, { summary: e.target.value })}
-                      placeholder="Project summary (Markdown supported)"
-                    />
-                    <div className="inline-form">
-                      <input
-                        value={draft.projects[index].blog_slug ?? ""}
-                        onChange={(e) => updateProject(index, { blog_slug: e.target.value || null })}
-                        placeholder="Linked blog slug"
-                      />
-                      <input
-                        value={draft.projects[index].external_url}
-                        onChange={(e) => updateProject(index, { external_url: e.target.value })}
-                        placeholder="External URL"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="stack publication-copy">
-                      <div className="post-meta">
-                        <span>{project.period}</span>
-                      </div>
-                      {project.blog_slug ? (
-                        <Link to={`/blog/${project.blog_slug}`} className="publication-title-link">
-                          {project.title}
-                        </Link>
-                      ) : project.external_url ? (
-                        <a href={project.external_url} target="_blank" rel="noreferrer" className="publication-title-link">
-                          {project.title}
-                        </a>
-                      ) : (
-                        <h3>{project.title}</h3>
-                      )}
-                      <div className="markdown-body project-summary">
-                        <ReactMarkdown>{project.summary}</ReactMarkdown>
-                      </div>
-                    </div>
-                    <div className="action-row">
-                      {project.blog_slug ? (
-                        <Link to={`/blog/${project.blog_slug}`} className="primary-link">
-                          Read note
-                        </Link>
-                      ) : null}
-                      {project.external_url ? (
-                        <a href={project.external_url} target="_blank" rel="noreferrer" className="primary-link">
-                          External
-                        </a>
-                      ) : null}
-                    </div>
-                  </>
-                )}
-              </article>
-            ))}
-            {editable ? (
-              <button
-                type="button"
-                className="text-button"
-                onClick={() =>
-                  updateField("projects", [
-                    ...draft.projects,
-                    { title: "", summary: "", period: "", external_url: "", blog_slug: null },
-                  ])
-                }
-              >
-                Add Project
-              </button>
-            ) : null}
-          </div>
-        </section>
-      </div>
+      ) : (
+        <div className="overview-masonry">
+          {overviewSectionOrder.map((sectionId) => (
+            <div key={sectionId} className="overview-masonry-item">
+              {renderOverviewDisplaySection(sectionId)}
+            </div>
+          ))}
+        </div>
+      )}
 
       <section className="stack">
         <div className="section-header">

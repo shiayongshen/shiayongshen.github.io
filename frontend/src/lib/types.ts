@@ -44,6 +44,7 @@ export type Profile = {
   research_interests_markdown: string;
   publications: PublicationItem[];
   projects: ProjectItem[];
+  overview_section_order: string[];
   skills_markdown: string;
   updated_at: string;
 };

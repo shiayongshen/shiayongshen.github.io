@@ -3,11 +3,12 @@ import ReactMarkdown from "react-markdown";
 type MarkdownCardProps = {
   title: string;
   content: string;
+  className?: string;
 };
 
-export function MarkdownCard({ title, content }: MarkdownCardProps) {
+export function MarkdownCard({ title, content, className = "" }: MarkdownCardProps) {
   return (
-    <section className="panel">
+    <section className={`panel${className ? ` ${className}` : ""}`}>
       <div className="section-heading">
         <span>{title}</span>
       </div>
