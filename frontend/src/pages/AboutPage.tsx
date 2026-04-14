@@ -43,12 +43,8 @@ export function AboutPage({
     if (typeof window === "undefined" || isEditing) return false;
     return window.sessionStorage.getItem("home_intro_seen") !== "true";
   });
-  if (!profile) {
-    return <div className="panel">Loading profile...</div>;
-  }
-
   const editable = isEditing && draft;
-  const view = editable ? draft : profile;
+  const view = profile ? (editable ? draft : profile) : null;
   const latestPosts = posts.filter((post) => post.published).slice(0, 3);
 
   useEffect(() => {
@@ -57,6 +53,10 @@ export function AboutPage({
     const timer = window.setTimeout(() => setShowLandingIntro(false), 1700);
     return () => window.clearTimeout(timer);
   }, [editable, showLandingIntro]);
+
+  if (!profile || !view) {
+    return <div className="panel">Loading profile...</div>;
+  }
 
   function updateField<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
     if (!draft) return;
