@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { AskVincentPanel } from "./AskVincentPanel";
 
 type LayoutProps = {
   isAdmin: boolean;
@@ -45,6 +46,8 @@ export function Layout({ isAdmin, onLogout }: LayoutProps) {
           </div>
         </div>
       </main>
+
+      {!isAdmin ? <AskVincentPanel /> : null}
     </div>
   );
 }

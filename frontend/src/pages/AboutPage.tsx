@@ -633,8 +633,6 @@ export function AboutPage({
         </aside>
       </section>
 
-      {!editable ? <AskVincentPanel /> : null}
-
       {!editable && latestPosts.length ? (
         <section className="panel stack">
           <div className="section-header">

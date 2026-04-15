@@ -5,12 +5,14 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Any
+from collections.abc import Iterator
 from urllib import error, request
 
 from sqlalchemy.orm import Session
 
 from .config import settings
 from .models import BlogPost, KnowledgeItem, Profile, SkillCard
+from .schemas import AssistantConversationTurn
 
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9][a-z0-9\-\+#\.]{1,}")
@@ -359,10 +361,29 @@ def _extract_response_text(payload: dict[str, Any]) -> str:
     return _normalize_whitespace("\n".join(chunks))
 
 
-def generate_answer_with_openai(question: str, ranked_cards: list[RankedSkillCard]) -> str | None:
-    if not settings.openai_api_key or not settings.openai_model:
-        return None
+def _normalize_history(history: list[AssistantConversationTurn]) -> list[AssistantConversationTurn]:
+    normalized: list[AssistantConversationTurn] = []
+    for turn in history[-12:]:
+        text = _normalize_whitespace(turn.text)
+        if not text:
+            continue
+        normalized.append(AssistantConversationTurn(role=turn.role, text=text[:4000]))
+    return normalized
 
+
+def _build_contextual_question(question: str, history: list[AssistantConversationTurn]) -> str:
+    recent_user_turns = [turn.text for turn in history if turn.role == "user"]
+    search_parts = recent_user_turns[-3:] + [question]
+    return _build_search_text(*search_parts)
+
+
+def _build_openai_request_body(
+    question: str,
+    ranked_cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+    *,
+    stream: bool,
+) -> dict[str, Any]:
     card_context = []
     for item in ranked_cards:
         card_context.append(
@@ -376,26 +397,101 @@ def generate_answer_with_openai(question: str, ranked_cards: list[RankedSkillCar
             }
         )
 
-    body = {
+    inputs: list[dict[str, Any]] = [
+        {
+            "role": "system",
+            "content": (
+                "You are a site assistant for Vincent Hsia. "
+                "Use conversation history only to resolve context like pronouns, follow-up references, or topic continuity. "
+                "Answer using only the provided site knowledge. "
+                "Keep replies short by default: 1 short paragraph or 2-4 bullets. "
+                "Decide the response style from the user's message yourself. "
+                "If the user is only greeting you, thanking you, or making a vague social opener, reply in one short sentence and invite a more specific question. "
+                "If the user asks what you can do, reply briefly with examples of what they can ask. "
+                "Use longer answers only when the question is actually substantive. "
+                "If the current message depends on earlier turns, acknowledge the reference naturally. "
+                "Do not invent details."
+            ),
+        }
+    ]
+
+    for turn in history:
+        inputs.append({"role": turn.role, "content": turn.text})
+
+    inputs.append(
+        {
+            "role": "user",
+            "content": json.dumps(
+                {"question": question, "selected_skill_cards": card_context},
+                ensure_ascii=False,
+            ),
+        }
+    )
+
+    return {
         "model": settings.openai_model,
-        "input": [
-            {
-                "role": "system",
-                "content": (
-                    "You answer questions about Vincent Hsia using only the provided site knowledge. "
-                    "Be concise, factual, and explicit when evidence is limited. "
-                    "Do not invent details. Mention relevant links inline when useful."
-                ),
-            },
-            {
-                "role": "user",
-                "content": json.dumps(
-                    {"question": question, "selected_skill_cards": card_context},
-                    ensure_ascii=False,
-                ),
-            },
-        ],
+        "stream": stream,
+        "input": inputs,
     }
+
+
+def iter_openai_stream(
+    question: str,
+    ranked_cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+) -> Iterator[str]:
+    if not settings.openai_api_key or not settings.openai_model:
+        return
+
+    body = _build_openai_request_body(question, ranked_cards, history, stream=True)
+    req = request.Request(
+        "https://api.openai.com/v1/responses",
+        data=json.dumps(body).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {settings.openai_api_key}",
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+        },
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(req, timeout=60) as response:
+            data_lines: list[str] = []
+            for raw_line in response:
+                line = raw_line.decode("utf-8")
+                stripped = line.strip()
+                if not stripped:
+                    if not data_lines:
+                        continue
+                    data = "\n".join(data_lines)
+                    data_lines = []
+                    if data == "[DONE]":
+                        break
+                    try:
+                        payload = json.loads(data)
+                    except json.JSONDecodeError:
+                        continue
+                    if payload.get("type") == "response.output_text.delta":
+                        delta = payload.get("delta", "")
+                        if delta:
+                            yield delta
+                    continue
+
+                if stripped.startswith("data:"):
+                    data_lines.append(stripped[5:].lstrip())
+    except (error.HTTPError, error.URLError, TimeoutError):
+        return
+
+
+def generate_answer_with_openai(
+    question: str,
+    ranked_cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+) -> str | None:
+    if not settings.openai_api_key or not settings.openai_model:
+        return None
+    body = _build_openai_request_body(question, ranked_cards, history, stream=False)
     req = request.Request(
         "https://api.openai.com/v1/responses",
         data=json.dumps(body).encode("utf-8"),
@@ -435,9 +531,38 @@ def generate_fallback_answer(question: str, ranked_cards: list[RankedSkillCard])
     return " ".join(lines)
 
 
-def answer_question(db: Session, question: str, limit: int = 4) -> tuple[str, list[RankedSkillCard]]:
-    ranked_cards = search_skill_cards(db, question, limit=limit)
-    answer = generate_answer_with_openai(question, ranked_cards)
+def answer_question(
+    db: Session,
+    question: str,
+    history: list[AssistantConversationTurn] | None = None,
+    limit: int = 4,
+) -> tuple[str, list[RankedSkillCard]]:
+    normalized_history = _normalize_history(history or [])
+    contextual_question = _build_contextual_question(question, normalized_history)
+    ranked_cards = search_skill_cards(db, contextual_question, limit=limit)
+    answer = generate_answer_with_openai(question, ranked_cards, normalized_history)
     if not answer:
         answer = generate_fallback_answer(question, ranked_cards)
     return answer, ranked_cards
+
+
+def stream_answer_question(
+    db: Session,
+    question: str,
+    history: list[AssistantConversationTurn] | None = None,
+    limit: int = 4,
+) -> tuple[str, list[RankedSkillCard], Iterator[str]]:
+    normalized_history = _normalize_history(history or [])
+    contextual_question = _build_contextual_question(question, normalized_history)
+    ranked_cards = search_skill_cards(db, contextual_question, limit=limit)
+    if settings.openai_api_key and settings.openai_model:
+        return "", ranked_cards, iter_openai_stream(question, ranked_cards, normalized_history)
+
+    fallback_answer = generate_fallback_answer(question, ranked_cards)
+
+    def fallback_stream() -> Iterator[str]:
+        words = fallback_answer.split(" ")
+        for index, word in enumerate(words):
+            yield word if index == len(words) - 1 else f"{word} "
+
+    return fallback_answer, ranked_cards, fallback_stream()

@@ -1,7 +1,7 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
-import type { AskAssistantResponse } from "../lib/types";
+import type { AskAssistantResponse, AssistantConversationTurn } from "../lib/types";
 
 const QUICK_QUESTIONS = [
   "What does Vincent build?",
@@ -10,22 +10,124 @@ const QUICK_QUESTIONS = [
   "What experience shows Vincent can ship end-to-end systems?",
 ];
 
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  displayText?: string;
+  response?: AskAssistantResponse;
+};
+
+const MAX_HISTORY_TURNS = 8;
+
 export function AskVincentPanel() {
+  const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState<AskAssistantResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const threadEndRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ block: "end" });
+  }, [messages, open, loading]);
+
+  function buildHistory(): AssistantConversationTurn[] {
+    return messages
+      .filter((message) => {
+        if (message.role === "user") {
+          return Boolean(message.text.trim());
+        }
+        return Boolean((message.response?.answer ?? message.text).trim());
+      })
+      .slice(-MAX_HISTORY_TURNS)
+      .map((message) => ({
+        role: message.role,
+        text: message.role === "assistant" ? message.response?.answer ?? message.text : message.text,
+      }));
+  }
 
   async function ask(nextQuestion: string) {
     const trimmed = nextQuestion.trim();
     if (!trimmed) return;
+    const history = buildHistory();
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      text: trimmed,
+    };
     setLoading(true);
     setError("");
-    setQuestion(trimmed);
+    setMessages((current) => [...current, userMessage]);
+    setQuestion("");
+    setOpen(true);
+    const assistantId = `assistant-${Date.now()}`;
+    setMessages((current) => [
+      ...current,
+      {
+        id: assistantId,
+        role: "assistant",
+        text: "",
+        displayText: "",
+      },
+    ]);
     try {
-      setResponse(await api.askAssistant(trimmed));
+      const response = await api.askAssistantStream(trimmed, history);
+      if (!response.ok || !response.body) {
+        throw new Error("Could not stream an answer right now.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+          const event = JSON.parse(trimmedLine) as
+            | { type: "text_delta"; delta: string }
+            | { type: "meta"; response: AskAssistantResponse }
+            | { type: "done" };
+
+          if (event.type === "text_delta") {
+            setMessages((current) =>
+              current.map((message) =>
+                message.id === assistantId
+                  ? {
+                      ...message,
+                      text: `${message.text}${event.delta}`,
+                      displayText: `${message.displayText ?? ""}${event.delta}`,
+                    }
+                  : message,
+              ),
+            );
+          }
+
+          if (event.type === "meta") {
+            setMessages((current) =>
+              current.map((message) =>
+                message.id === assistantId
+                  ? {
+                      ...message,
+                      text: event.response.answer,
+                      displayText: event.response.answer,
+                      response: event.response,
+                    }
+                  : message,
+              ),
+            );
+          }
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not get an answer right now.");
+      setMessages((current) => current.filter((message) => message.id !== assistantId));
     } finally {
       setLoading(false);
     }
@@ -37,95 +139,121 @@ export function AskVincentPanel() {
   }
 
   return (
-    <section className="panel stack ask-panel">
-      <div className="section-header">
-        <div>
-          <p className="eyebrow">Ask Vincent AI</p>
-          <h2>Ask about background, projects, writing, or fit.</h2>
-        </div>
-      </div>
-
-      <div className="ask-chip-row">
-        {QUICK_QUESTIONS.map((item) => (
-          <button key={item} type="button" className="ask-chip" onClick={() => ask(item)} disabled={loading}>
-            {item}
-          </button>
-        ))}
-      </div>
-
-      <form className="stack" onSubmit={handleSubmit}>
-        <textarea
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          rows={4}
-          placeholder="Ask something like: Is Vincent a good fit for an AI product engineering role?"
-        />
-        <div className="action-row">
-          <button className="primary-button" disabled={loading}>
-            {loading ? "Thinking..." : "Ask"}
-          </button>
-          <span className="muted">Answers are grounded in the site content.</span>
-        </div>
-      </form>
-
-      {error ? <p className="error-text">{error}</p> : null}
-
-      {response ? (
-        <div className="stack ask-response">
-          <div className="nested-panel">
-            <p>{response.answer}</p>
+    <div className={`ask-widget${open ? " is-open" : ""}`}>
+      {open ? (
+        <section className="panel stack ask-panel ask-popover">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Ask Vincent AI</p>
+              <h2>Ask about background, projects, writing, or fit.</h2>
+            </div>
+            <button type="button" className="text-button" onClick={() => setOpen(false)}>
+              Close
+            </button>
           </div>
 
-          {response.selected_skills.length ? (
-            <div className="stack">
-              <div className="section-heading">
-                <span>Used Skills</span>
-              </div>
-              <div className="ask-skill-grid">
-                {response.selected_skills.map((skill) => (
-                  <article key={skill.id} className="nested-panel ask-skill-card">
-                    <div className="stack">
-                      <div className="post-meta">
-                        <strong>{skill.skill_name}</strong>
-                        <span>{skill.skill_type}</span>
-                      </div>
-                      <p className="muted">{skill.summary}</p>
-                      <div className="tag-row">
-                        {skill.tags.slice(0, 4).filter(Boolean).map((tag) => (
-                          <span key={`${skill.id}-${tag}`} className="tag">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          ) : null}
+          <div className="ask-chip-row">
+            {QUICK_QUESTIONS.map((item) => (
+              <button key={item} type="button" className="ask-chip" onClick={() => ask(item)} disabled={loading}>
+                {item}
+              </button>
+            ))}
+          </div>
 
-          {response.related_links.length ? (
-            <div className="stack">
-              <div className="section-heading">
-                <span>Related Links</span>
-              </div>
-              <div className="link-row">
-                {response.related_links.map((link) => (
-                  /^https?:\/\//.test(link.url) ? (
-                    <a key={`${link.type}-${link.url}`} href={link.url} target="_blank" rel="noreferrer" className="primary-link">
-                      {link.title}
-                    </a>
-                  ) : (
-                    <Link key={`${link.type}-${link.url}`} to={link.url} className="primary-link">
-                      {link.title}
-                    </Link>
-                  )
-                ))}
-              </div>
+          <form className="stack" onSubmit={handleSubmit}>
+            <textarea
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              rows={4}
+              placeholder="Ask something like: Is Vincent a good fit for an AI product engineering role?"
+            />
+            <div className="action-row">
+              <button className="primary-button" disabled={loading}>
+                {loading ? "Thinking..." : "Ask"}
+              </button>
+              <span className="muted">Answers are grounded in the site content.</span>
             </div>
-          ) : null}
-        </div>
+          </form>
+
+          {error ? <p className="error-text">{error}</p> : null}
+
+          <div className="ask-thread">
+            {messages.length ? (
+              messages.map((message) => (
+                <article
+                  key={message.id}
+                  className={`ask-message${message.role === "user" ? " ask-message-user" : " ask-message-assistant"}${
+                    message.role === "assistant" && !message.response ? " ask-message-typing" : ""
+                  }`}
+                >
+                  <div className="ask-message-label">{message.role === "user" ? "You" : "Ask Vincent AI"}</div>
+                  <div className="ask-message-bubble">
+                    <p>{message.role === "assistant" ? message.displayText ?? "" : message.text}</p>
+
+                    {message.role === "assistant" && message.response?.selected_skills.length ? (
+                      <div className="stack ask-message-meta">
+                        <div className="section-heading">
+                          <span>Used Skills</span>
+                        </div>
+                        <div className="ask-skill-grid">
+                          {message.response.selected_skills.map((skill) => (
+                            <article key={skill.id} className="nested-panel ask-skill-card">
+                              <div className="stack">
+                                <div className="post-meta">
+                                  <strong>{skill.skill_name}</strong>
+                                  <span>{skill.skill_type}</span>
+                                </div>
+                                <p className="muted">{skill.summary}</p>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {message.role === "assistant" && message.response?.related_links.length ? (
+                      <div className="stack ask-message-meta">
+                        <div className="section-heading">
+                          <span>Related Links</span>
+                        </div>
+                        <div className="link-row">
+                          {message.response.related_links.map((link) =>
+                            /^https?:\/\//.test(link.url) ? (
+                              <a key={`${message.id}-${link.type}-${link.url}`} href={link.url} target="_blank" rel="noreferrer" className="primary-link">
+                                {link.title}
+                              </a>
+                            ) : (
+                              <Link key={`${message.id}-${link.type}-${link.url}`} to={link.url} className="primary-link">
+                                {link.title}
+                              </Link>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </article>
+              ))
+            ) : (
+              <div className="nested-panel ask-empty">
+                <p>Ask about Vincent's background, projects, writing, or role fit.</p>
+              </div>
+            )}
+
+            <div ref={threadEndRef} />
+          </div>
+        </section>
       ) : null}
-    </section>
+
+      <button
+        type="button"
+        className="ask-fab"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-label="Open Ask Vincent AI"
+      >
+        <span>AI</span>
+      </button>
+    </div>
   );
 }

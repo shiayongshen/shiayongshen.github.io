@@ -144,8 +144,14 @@ class AssistantRelatedLink(BaseModel):
     type: str
 
 
+class AssistantConversationTurn(BaseModel):
+    role: str = Field(pattern=r"^(user|assistant)$")
+    text: str = Field(min_length=1, max_length=4000)
+
+
 class AskAssistantRequest(BaseModel):
     question: str = Field(min_length=1, max_length=500)
+    history: list[AssistantConversationTurn] = Field(default_factory=list, max_length=12)
 
 
 class AskAssistantResponse(BaseModel):

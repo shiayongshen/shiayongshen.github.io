@@ -6,12 +6,13 @@ from uuid import uuid4
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from PIL import Image, ImageOps
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
-from .assistant import answer_question, sync_knowledge_base
+from .assistant import answer_question, stream_answer_question, sync_knowledge_base
 from .auth import authenticate_admin, create_access_token, get_current_admin
 from .config import settings
 from .database import Base, SessionLocal, engine, get_db
@@ -275,7 +276,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @app.post(f"{settings.api_prefix}/ask", response_model=AskAssistantResponse)
 def ask_assistant(payload: AskAssistantRequest, db: Session = Depends(get_db)) -> AskAssistantResponse:
-    answer, ranked_cards = answer_question(db, payload.question)
+    answer, ranked_cards = answer_question(db, payload.question, history=payload.history)
     selected_cards = [serialize_skill_card(item.card) for item in ranked_cards]
     seen_links: set[str] = set()
     related_links: list[AssistantRelatedLink] = []
@@ -296,6 +297,54 @@ def ask_assistant(payload: AskAssistantRequest, db: Session = Depends(get_db)) -
         selected_skills=selected_cards,
         related_links=related_links,
     )
+
+
+@app.post(f"{settings.api_prefix}/ask/stream")
+def ask_assistant_stream(payload: AskAssistantRequest, db: Session = Depends(get_db)) -> StreamingResponse:
+    fallback_answer, ranked_cards, answer_stream = stream_answer_question(
+        db,
+        payload.question,
+        history=payload.history,
+    )
+    selected_cards = [serialize_skill_card(item.card) for item in ranked_cards]
+    seen_links: set[str] = set()
+    related_links: list[AssistantRelatedLink] = []
+    for item in ranked_cards:
+        if not item.card.url or item.card.url in seen_links:
+            continue
+        seen_links.add(item.card.url)
+        related_links.append(
+            AssistantRelatedLink(
+                title=item.card.skill_name,
+                url=item.card.url,
+                type=item.card.skill_type,
+            )
+        )
+
+    def stream():
+        answer_parts: list[str] = []
+        for delta in answer_stream:
+            answer_parts.append(delta)
+            yield json.dumps({"type": "text_delta", "delta": delta}, ensure_ascii=False) + "\n"
+
+        final_answer = "".join(answer_parts).strip() or fallback_answer
+        if not answer_parts and fallback_answer:
+            yield json.dumps({"type": "text_delta", "delta": fallback_answer}, ensure_ascii=False) + "\n"
+
+        yield json.dumps(
+            {
+                "type": "meta",
+                "response": AskAssistantResponse(
+                    answer=final_answer,
+                    selected_skills=selected_cards,
+                    related_links=related_links,
+                ).model_dump(),
+            },
+            ensure_ascii=False,
+        ) + "\n"
+        yield json.dumps({"type": "done"}, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(stream(), media_type="application/x-ndjson")
 
 
 @app.get(f"{settings.api_prefix}/profile", response_model=ProfileRead)

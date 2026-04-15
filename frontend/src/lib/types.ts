@@ -102,6 +102,11 @@ export type AskAssistantResponse = {
   related_links: AssistantRelatedLink[];
 };
 
+export type AssistantConversationTurn = {
+  role: "user" | "assistant";
+  text: string;
+};
+
 export type GuestbookEntry = {
   id: number;
   name: string;

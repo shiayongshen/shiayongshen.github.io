@@ -1,4 +1,5 @@
 import type {
+  AssistantConversationTurn,
   AskAssistantResponse,
   BlogComment,
   BlogPost,
@@ -9,7 +10,7 @@ import type {
   Profile,
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
+export const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 
 async function request<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
   const headers = new Headers(init?.headers ?? {});
@@ -39,10 +40,16 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
 
 export const api = {
   getProfile: () => request<Profile>("/profile"),
-  askAssistant: (question: string) =>
+  askAssistant: (question: string, history: AssistantConversationTurn[] = []) =>
     request<AskAssistantResponse>("/ask", {
       method: "POST",
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, history }),
+    }),
+  askAssistantStream: (question: string, history: AssistantConversationTurn[] = []) =>
+    fetch(`${API_BASE}/ask/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, history }),
     }),
   getBlogPosts: () => request<BlogPost[]>("/blog-posts"),
   getBlogPost: (slug: string) => request<BlogPost>(`/blog-posts/${slug}`),
