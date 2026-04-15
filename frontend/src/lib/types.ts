@@ -98,6 +98,7 @@ export type AssistantRelatedLink = {
 
 export type AskAssistantResponse = {
   answer: string;
+  show_sources: boolean;
   selected_skills: AssistantSkillCard[];
   related_links: AssistantRelatedLink[];
 };

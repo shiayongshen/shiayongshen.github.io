@@ -190,7 +190,9 @@ export function AskVincentPanel() {
                   <div className="ask-message-bubble">
                     <p>{message.role === "assistant" ? message.displayText ?? "" : message.text}</p>
 
-                    {message.role === "assistant" && message.response?.selected_skills.length ? (
+                    {message.role === "assistant" &&
+                    message.response?.show_sources &&
+                    message.response.selected_skills.length ? (
                       <div className="stack ask-message-meta">
                         <div className="section-heading">
                           <span>Used Skills</span>
@@ -211,7 +213,9 @@ export function AskVincentPanel() {
                       </div>
                     ) : null}
 
-                    {message.role === "assistant" && message.response?.related_links.length ? (
+                    {message.role === "assistant" &&
+                    message.response?.show_sources &&
+                    message.response.related_links.length ? (
                       <div className="stack ask-message-meta">
                         <div className="section-heading">
                           <span>Related Links</span>

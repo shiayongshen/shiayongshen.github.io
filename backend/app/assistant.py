@@ -16,6 +16,19 @@ from .schemas import AssistantConversationTurn
 
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9][a-z0-9\-\+#\.]{1,}")
+SOCIAL_TOKENS = {
+    "hi",
+    "hello",
+    "hey",
+    "thanks",
+    "thank",
+    "thx",
+    "yo",
+    "ok",
+    "okay",
+    "cool",
+    "nice",
+}
 
 
 @dataclass
@@ -435,6 +448,127 @@ def _build_openai_request_body(
     }
 
 
+def _extract_json_object(payload: dict[str, Any]) -> dict[str, Any] | None:
+    text = _extract_response_text(payload)
+    if not text:
+        return None
+    try:
+        loaded = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return loaded if isinstance(loaded, dict) else None
+
+
+def _build_source_visibility_request_body(
+    question: str,
+    answer: str,
+    ranked_cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+) -> dict[str, Any]:
+    card_context = [
+        {
+            "skill_name": item.card.skill_name,
+            "skill_type": item.card.skill_type,
+            "summary": item.card.summary,
+            "url": item.card.url,
+        }
+        for item in ranked_cards
+    ]
+    history_context = [{"role": turn.role, "text": turn.text} for turn in history[-6:]]
+    return {
+        "model": settings.openai_model,
+        "input": [
+            {
+                "role": "system",
+                "content": (
+                    "You decide whether a UI should show source cards for an assistant reply. "
+                    "Return strict JSON only with one boolean field: {\"show_sources\": true|false}. "
+                    "Return true only when the answer materially relies on the provided site knowledge cards. "
+                    "Return false for greetings, thanks, vague social replies, generic follow-ups, or answers that do not really use the cards."
+                ),
+            },
+            {
+                "role": "user",
+                "content": json.dumps(
+                    {
+                        "question": question,
+                        "answer": answer,
+                        "history": history_context,
+                        "selected_skill_cards": card_context,
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+        ],
+    }
+
+
+def _should_force_hide_sources(question: str, answer: str, ranked_cards: list[RankedSkillCard]) -> bool:
+    if not ranked_cards:
+        return True
+
+    normalized_question = _normalize_whitespace(question).lower()
+    normalized_answer = _normalize_whitespace(answer).lower()
+    question_tokens = set(_tokenize(normalized_question))
+
+    if normalized_question in {"hi", "hello", "hey", "thanks", "thank you", "ok", "okay"}:
+        return True
+    if question_tokens and question_tokens.issubset(SOCIAL_TOKENS) and len(question_tokens) <= 3:
+        return True
+    if len(normalized_answer) < 40 and any(token in SOCIAL_TOKENS for token in question_tokens):
+        return True
+    return False
+
+
+def decide_show_sources_with_openai(
+    question: str,
+    answer: str,
+    ranked_cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+) -> bool | None:
+    if not settings.openai_api_key or not settings.openai_model:
+        return None
+
+    body = _build_source_visibility_request_body(question, answer, ranked_cards, history)
+    req = request.Request(
+        "https://api.openai.com/v1/responses",
+        data=json.dumps(body).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {settings.openai_api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(req, timeout=20) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (error.HTTPError, error.URLError, TimeoutError, json.JSONDecodeError):
+        return None
+
+    parsed = _extract_json_object(payload)
+    if not parsed or not isinstance(parsed.get("show_sources"), bool):
+        return None
+    return parsed["show_sources"]
+
+
+def determine_show_sources(
+    question: str,
+    answer: str,
+    ranked_cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+) -> bool:
+    if _should_force_hide_sources(question, answer, ranked_cards):
+        return False
+
+    llm_decision = decide_show_sources_with_openai(question, answer, ranked_cards, history)
+    if llm_decision is None:
+        return bool(ranked_cards)
+    if not ranked_cards:
+        return False
+    return llm_decision
+
+
 def iter_openai_stream(
     question: str,
     ranked_cards: list[RankedSkillCard],
@@ -536,14 +670,15 @@ def answer_question(
     question: str,
     history: list[AssistantConversationTurn] | None = None,
     limit: int = 4,
-) -> tuple[str, list[RankedSkillCard]]:
+) -> tuple[str, bool, list[RankedSkillCard]]:
     normalized_history = _normalize_history(history or [])
     contextual_question = _build_contextual_question(question, normalized_history)
     ranked_cards = search_skill_cards(db, contextual_question, limit=limit)
     answer = generate_answer_with_openai(question, ranked_cards, normalized_history)
     if not answer:
         answer = generate_fallback_answer(question, ranked_cards)
-    return answer, ranked_cards
+    show_sources = determine_show_sources(question, answer, ranked_cards, normalized_history)
+    return answer, show_sources, ranked_cards
 
 
 def stream_answer_question(
@@ -551,18 +686,19 @@ def stream_answer_question(
     question: str,
     history: list[AssistantConversationTurn] | None = None,
     limit: int = 4,
-) -> tuple[str, list[RankedSkillCard], Iterator[str]]:
+) -> tuple[str, bool, list[RankedSkillCard], Iterator[str]]:
     normalized_history = _normalize_history(history or [])
     contextual_question = _build_contextual_question(question, normalized_history)
     ranked_cards = search_skill_cards(db, contextual_question, limit=limit)
     if settings.openai_api_key and settings.openai_model:
-        return "", ranked_cards, iter_openai_stream(question, ranked_cards, normalized_history)
+        return "", True, ranked_cards, iter_openai_stream(question, ranked_cards, normalized_history)
 
     fallback_answer = generate_fallback_answer(question, ranked_cards)
+    show_sources = determine_show_sources(question, fallback_answer, ranked_cards, normalized_history)
 
     def fallback_stream() -> Iterator[str]:
         words = fallback_answer.split(" ")
         for index, word in enumerate(words):
             yield word if index == len(words) - 1 else f"{word} "
 
-    return fallback_answer, ranked_cards, fallback_stream()
+    return fallback_answer, show_sources, ranked_cards, fallback_stream()

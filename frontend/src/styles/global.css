@@ -421,9 +421,7 @@ input[type="file"] {
 .ask-thread {
   display: grid;
   gap: 14px;
-  max-height: 42vh;
-  padding-right: 4px;
-  overflow: auto;
+  min-height: 0;
 }
 
 .ask-empty p,

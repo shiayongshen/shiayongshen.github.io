@@ -156,6 +156,7 @@ class AskAssistantRequest(BaseModel):
 
 class AskAssistantResponse(BaseModel):
     answer: str
+    show_sources: bool = True
     selected_skills: list[AssistantSkillCardRead]
     related_links: list[AssistantRelatedLink]
 
