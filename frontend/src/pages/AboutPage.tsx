@@ -612,10 +612,6 @@ export function AboutPage({
             <>
               <h1>{view.full_name}</h1>
               <h2>AI-empowered engineer building useful systems and shipping practical products.</h2>
-              <p className="hero-lead">
-                I work at the intersection of software engineering, product thinking, and applied AI.
-                I turn rough ideas into usable tools, technical writing, and production-ready systems.
-              </p>
               <div className="markdown-body intro">
                 <ReactMarkdown>{view.intro_markdown}</ReactMarkdown>
               </div>
