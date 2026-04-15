@@ -707,6 +707,11 @@ export function AboutPage({
                     onChange={(e) => updateEducation(index, { lab_name: e.target.value })}
                     placeholder="實驗室名稱"
                   />
+                  <input
+                    value={draft.education[index].department_name}
+                    onChange={(e) => updateEducation(index, { department_name: e.target.value })}
+                    placeholder="科系名稱"
+                  />
                   <textarea
                     className="inline-edit-textarea"
                     rows={4}
@@ -725,6 +730,7 @@ export function AboutPage({
                   ) : null}
                 </div>
                 <h3>{item.school}</h3>
+                {item.department_name ? <p className="education-department">{item.department_name}</p> : null}
                 {item.lab_name ? <p className="education-lab">{item.lab_name}</p> : null}
                 {item.thesis_title ? <p className="muted">畢業專題 / 論文：{item.thesis_title}</p> : null}
               </article>
@@ -738,7 +744,7 @@ export function AboutPage({
             onClick={() =>
               updateField("education", [
                 ...draft.education,
-                { period: "", school: "", school_logo_url: "", lab_name: "", thesis_title: "" },
+                { period: "", school: "", school_logo_url: "", department_name: "", lab_name: "", thesis_title: "" },
               ])
             }
           >

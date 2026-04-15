@@ -36,6 +36,7 @@ class EducationItem(BaseModel):
     period: str = Field(min_length=1, max_length=120)
     school: str = Field(min_length=1, max_length=200)
     school_logo_url: str = ""
+    department_name: str = Field(default="", max_length=200)
     lab_name: str = Field(default="", max_length=200)
     thesis_title: str = Field(default="", max_length=500)
 

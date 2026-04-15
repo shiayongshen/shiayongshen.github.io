@@ -356,6 +356,11 @@ export function ProfileEditor({
                   </div>
                 ) : null}
                 <input
+                  value={item.department_name}
+                  onChange={(e) => updateEducation(index, { department_name: e.target.value })}
+                  placeholder="Department name"
+                />
+                <input
                   value={item.lab_name}
                   onChange={(e) => updateEducation(index, { lab_name: e.target.value })}
                   placeholder="Lab name"
@@ -376,7 +381,7 @@ export function ProfileEditor({
                   ...form,
                   education: [
                     ...form.education,
-                    { period: "", school: "", school_logo_url: "", lab_name: "", thesis_title: "" },
+                    { period: "", school: "", school_logo_url: "", department_name: "", lab_name: "", thesis_title: "" },
                   ],
                 })
               }
@@ -581,6 +586,7 @@ export function ProfileEditor({
                     ) : null}
                   </div>
                   <h3>{item.school || "School"}</h3>
+                  {item.department_name ? <p className="education-department">{item.department_name}</p> : null}
                   {item.lab_name ? <p className="education-lab">{item.lab_name}</p> : null}
                   <p className="muted">{item.thesis_title || "Graduation project / thesis"}</p>
                 </article>

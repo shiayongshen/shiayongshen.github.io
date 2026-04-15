@@ -17,6 +17,7 @@ export type EducationItem = {
   period: string;
   school: string;
   school_logo_url: string;
+  department_name: string;
   lab_name: string;
   thesis_title: string;
 };

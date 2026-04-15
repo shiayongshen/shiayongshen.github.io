@@ -47,6 +47,7 @@ def seed_database(db: Session) -> None:
                             "period": "2022.09 - 2024.06",
                             "school": "National Example University",
                             "school_logo_url": "",
+                            "department_name": "Department of Computer Science",
                             "lab_name": "Applied AI Lab",
                             "thesis_title": "Designing Practical Human-AI Workflows for Knowledge Work",
                         }
