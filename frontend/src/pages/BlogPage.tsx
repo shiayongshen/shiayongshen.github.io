@@ -47,7 +47,7 @@ export function BlogPage({
       <section className="section-header">
         <div>
           <p className="eyebrow">Blog</p>
-          <h1>Markdown writing archive</h1>
+          
         </div>
         {isAdmin ? (
           <button className="primary-button" onClick={onCreate}>

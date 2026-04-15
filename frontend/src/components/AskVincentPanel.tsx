@@ -19,6 +19,8 @@ type ChatMessage = {
 };
 
 const MAX_HISTORY_TURNS = 8;
+const MAX_SESSION_QUESTIONS = 5;
+const SESSION_STORAGE_KEY = "ask-vincent-session-question-count";
 
 export function AskVincentPanel() {
   const [open, setOpen] = useState(false);
@@ -26,10 +28,33 @@ export function AskVincentPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [questionCount, setQuestionCount] = useState(0);
   const threadEndRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ block: "end" });
   }, [messages, open, loading]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const storedCount = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const parsedCount = storedCount ? Number.parseInt(storedCount, 10) : 0;
+    setQuestionCount(Number.isFinite(parsedCount) ? Math.min(Math.max(parsedCount, 0), MAX_SESSION_QUESTIONS) : 0);
+  }, []);
+
+  const remainingQuestions = Math.max(0, MAX_SESSION_QUESTIONS - questionCount);
+  const limitReached = remainingQuestions === 0;
+
+  function incrementQuestionCount() {
+    setQuestionCount((current) => {
+      const nextCount = Math.min(current + 1, MAX_SESSION_QUESTIONS);
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(SESSION_STORAGE_KEY, String(nextCount));
+      }
+      return nextCount;
+    });
+  }
 
   function buildHistory(): AssistantConversationTurn[] {
     return messages
@@ -49,6 +74,11 @@ export function AskVincentPanel() {
   async function ask(nextQuestion: string) {
     const trimmed = nextQuestion.trim();
     if (!trimmed) return;
+    if (limitReached) {
+      setError("This chat session has reached the 5-question limit.");
+      setOpen(true);
+      return;
+    }
     const history = buildHistory();
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -110,6 +140,7 @@ export function AskVincentPanel() {
           }
 
           if (event.type === "meta") {
+            incrementQuestionCount();
             setMessages((current) =>
               current.map((message) =>
                 message.id === assistantId
@@ -154,7 +185,7 @@ export function AskVincentPanel() {
 
           <div className="ask-chip-row">
             {QUICK_QUESTIONS.map((item) => (
-              <button key={item} type="button" className="ask-chip" onClick={() => ask(item)} disabled={loading}>
+              <button key={item} type="button" className="ask-chip" onClick={() => ask(item)} disabled={loading || limitReached}>
                 {item}
               </button>
             ))}
@@ -165,13 +196,18 @@ export function AskVincentPanel() {
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               rows={4}
+              disabled={loading || limitReached}
               placeholder="Ask something like: Is Vincent a good fit for an AI product engineering role?"
             />
             <div className="action-row">
-              <button className="primary-button" disabled={loading}>
+              <button className="primary-button" disabled={loading || limitReached}>
                 {loading ? "Thinking..." : "Ask"}
               </button>
-              <span className="muted">Answers are grounded in the site content.</span>
+              <span className="muted">
+                {limitReached
+                  ? "This session has used all 5 questions."
+                  : `${remainingQuestions} of ${MAX_SESSION_QUESTIONS} questions left in this session.`}
+              </span>
             </div>
           </form>
 
