@@ -56,24 +56,26 @@ def ensure_profile_schema() -> None:
     if "profiles" not in inspector.get_table_names():
         return
     columns = {column["name"] for column in inspector.get_columns("profiles")}
-    if "overview_section_order_json" in columns:
-        return
     default_order = '["research_interests", "skills", "publications", "projects"]'
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                "ALTER TABLE profiles "
-                "ADD COLUMN overview_section_order_json TEXT "
-                f"DEFAULT '{default_order}'"
+        if "overview_section_order_json" not in columns:
+            connection.execute(
+                text(
+                    "ALTER TABLE profiles "
+                    "ADD COLUMN overview_section_order_json TEXT "
+                    f"DEFAULT '{default_order}'"
+                )
             )
-        )
-        connection.execute(
-            text(
-                "UPDATE profiles "
-                f"SET overview_section_order_json = '{default_order}' "
-                "WHERE overview_section_order_json IS NULL"
+            connection.execute(
+                text(
+                    "UPDATE profiles "
+                    f"SET overview_section_order_json = '{default_order}' "
+                    "WHERE overview_section_order_json IS NULL"
+                )
             )
-        )
+        if "education_json" not in columns:
+            connection.execute(text("ALTER TABLE profiles ADD COLUMN education_json TEXT DEFAULT '[]'"))
+            connection.execute(text("UPDATE profiles SET education_json = '[]' WHERE education_json IS NULL"))
 
 
 def ensure_blog_post_metrics_schema() -> None:
@@ -151,6 +153,7 @@ def serialize_profile(profile: Profile) -> ProfileRead:
         email=profile.email,
         avatar_url=profile.avatar_url,
         links=json.loads(profile.links_json),
+        education=json.loads(profile.education_json or "[]"),
         experiences=json.loads(profile.experiences_json),
         research_interests_markdown=profile.research_interests_markdown,
         publications=json.loads(profile.publications_json),
@@ -504,6 +507,7 @@ def admin_update_profile(
     profile.email = payload.email
     profile.avatar_url = payload.avatar_url
     profile.links_json = json.dumps([link.model_dump() for link in payload.links], ensure_ascii=False)
+    profile.education_json = json.dumps([item.model_dump() for item in payload.education], ensure_ascii=False)
     profile.experiences_json = json.dumps(
         [experience.model_dump() for experience in payload.experiences],
         ensure_ascii=False,

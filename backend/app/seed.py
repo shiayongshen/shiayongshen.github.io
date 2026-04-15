@@ -41,6 +41,18 @@ def seed_database(db: Session) -> None:
                     ],
                     ensure_ascii=False,
                 ),
+                education_json=json.dumps(
+                    [
+                        {
+                            "period": "2022.09 - 2024.06",
+                            "school": "National Example University",
+                            "school_logo_url": "",
+                            "lab_name": "Applied AI Lab",
+                            "thesis_title": "Designing Practical Human-AI Workflows for Knowledge Work",
+                        }
+                    ],
+                    ensure_ascii=False,
+                ),
                 experiences_json=json.dumps(
                     [
                         {

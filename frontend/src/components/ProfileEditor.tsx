@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import type { ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
+import type { EducationItem, ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
 
 type ProfileEditorProps = {
   profile: Profile;
@@ -25,6 +25,7 @@ export function ProfileEditor({
     email: profile.email,
     avatar_url: profile.avatar_url,
     links: profile.links,
+    education: profile.education,
     experiences: profile.experiences,
     research_interests_markdown: profile.research_interests_markdown,
     publications: profile.publications,
@@ -46,6 +47,13 @@ export function ProfileEditor({
       currentIndex === index ? { ...experience, ...patch } : experience,
     );
     setForm({ ...form, experiences });
+  }
+
+  function updateEducation(index: number, patch: Partial<EducationItem>) {
+    const education = form.education.map((item, currentIndex) =>
+      currentIndex === index ? { ...item, ...patch } : item,
+    );
+    setForm({ ...form, education });
   }
 
   function updatePublication(index: number, patch: Partial<PublicationItem>) {
@@ -106,6 +114,25 @@ export function ProfileEditor({
       await onDeleteImage(url);
     }
     updateExperience(index, { [field]: "" });
+  }
+
+  async function uploadEducationLogo(index: number, file: File | undefined) {
+    if (!file) return;
+    setUploadingField(`education_logo-${index}`);
+    try {
+      const url = await onUploadImage(file);
+      updateEducation(index, { school_logo_url: url });
+    } finally {
+      setUploadingField("");
+    }
+  }
+
+  async function clearEducationLogo(index: number) {
+    const url = form.education[index]?.school_logo_url;
+    if (url) {
+      await onDeleteImage(url);
+    }
+    updateEducation(index, { school_logo_url: "" });
   }
 
   return (
@@ -290,6 +317,73 @@ export function ProfileEditor({
             value={form.skills_markdown}
             onChange={(e) => setForm({ ...form, skills_markdown: e.target.value })}
           />
+          <div className="section-heading">
+            <span>Education</span>
+          </div>
+          <div className="stack">
+            {form.education.map((item, index) => (
+              <div key={`${item.school}-${index}`} className="panel nested-panel">
+                <div className="inline-form">
+                  <input
+                    value={item.period}
+                    onChange={(e) => updateEducation(index, { period: e.target.value })}
+                    placeholder="Period"
+                  />
+                  <input
+                    value={item.school}
+                    onChange={(e) => updateEducation(index, { school: e.target.value })}
+                    placeholder="School name"
+                  />
+                </div>
+                <div className="inline-form">
+                  <input
+                    value={item.school_logo_url}
+                    onChange={(e) => updateEducation(index, { school_logo_url: e.target.value })}
+                    placeholder="School logo URL"
+                  />
+                  <label className="upload-field">
+                    <span>Upload logo</span>
+                    <input type="file" accept="image/*" onChange={(e) => uploadEducationLogo(index, e.target.files?.[0])} />
+                    {uploadingField === `education_logo-${index}` ? <small>Uploading...</small> : null}
+                  </label>
+                </div>
+                {item.school_logo_url ? (
+                  <div className="image-manager">
+                    <img className="image-preview image-preview-logo" src={item.school_logo_url} alt="School logo preview" loading="lazy" />
+                    <button type="button" className="text-button" onClick={() => clearEducationLogo(index)}>
+                      Remove logo
+                    </button>
+                  </div>
+                ) : null}
+                <input
+                  value={item.lab_name}
+                  onChange={(e) => updateEducation(index, { lab_name: e.target.value })}
+                  placeholder="Lab name"
+                />
+                <textarea
+                  rows={4}
+                  value={item.thesis_title}
+                  onChange={(e) => updateEducation(index, { thesis_title: e.target.value })}
+                  placeholder="Graduation project / thesis"
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              className="text-button"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  education: [
+                    ...form.education,
+                    { period: "", school: "", school_logo_url: "", lab_name: "", thesis_title: "" },
+                  ],
+                })
+              }
+            >
+              Add Education
+            </button>
+          </div>
           <div className="stack">
             {form.experiences.map((experience, index) => (
               <div key={`${experience.company}-${index}`} className="panel nested-panel">
@@ -475,6 +569,21 @@ export function ProfileEditor({
                 <span key={`${link.url}-${index}`} className="primary-link">
                   {link.label || link.url}
                 </span>
+              ))}
+            </div>
+            <div className="stack">
+              {form.education.map((item, index) => (
+                <article key={`${item.school}-${index}`} className="education-card">
+                  <div className="education-card-top">
+                    <span className="label">{item.period || "Period"}</span>
+                    {item.school_logo_url ? (
+                      <img className="education-logo" src={item.school_logo_url} alt={item.school} loading="lazy" />
+                    ) : null}
+                  </div>
+                  <h3>{item.school || "School"}</h3>
+                  {item.lab_name ? <p className="education-lab">{item.lab_name}</p> : null}
+                  <p className="muted">{item.thesis_title || "Graduation project / thesis"}</p>
+                </article>
               ))}
             </div>
             <div className="stack">

@@ -32,6 +32,14 @@ class ExperienceItem(BaseModel):
     story_slug: str | None = Field(default=None, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
+class EducationItem(BaseModel):
+    period: str = Field(min_length=1, max_length=120)
+    school: str = Field(min_length=1, max_length=200)
+    school_logo_url: str = ""
+    lab_name: str = Field(default="", max_length=200)
+    thesis_title: str = Field(default="", max_length=500)
+
+
 class PublicationItem(BaseModel):
     title: str = Field(min_length=1, max_length=500)
     authors: str = Field(min_length=1, max_length=800)
@@ -58,6 +66,7 @@ class ProfileBase(BaseModel):
     email: EmailStr
     avatar_url: str = ""
     links: list[LinkItem] = Field(default_factory=list)
+    education: list[EducationItem] = Field(default_factory=list)
     experiences: list[ExperienceItem] = Field(default_factory=list)
     research_interests_markdown: str = ""
     publications: list[PublicationItem] = Field(default_factory=list)

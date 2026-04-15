@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
-import type { BlogPost, ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
+import type { BlogPost, EducationItem, ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
 import { AskVincentPanel } from "../components/AskVincentPanel";
 import { MarkdownCard } from "../components/MarkdownCard";
 import { Seo } from "../components/Seo";
@@ -177,6 +177,11 @@ export function AboutPage({
   function updateExperience(index: number, patch: Partial<ExperienceItem>) {
     if (!draft) return;
     updateField("experiences", updateArrayItem(draft.experiences, index, patch));
+  }
+
+  function updateEducation(index: number, patch: Partial<EducationItem>) {
+    if (!draft) return;
+    updateField("education", updateArrayItem(draft.education, index, patch));
   }
 
   function updateOverviewSectionOrder(nextOrder: OverviewSectionId[]) {
@@ -487,6 +492,25 @@ export function AboutPage({
     updateExperience(index, { [field]: "" });
   }
 
+  async function uploadEducationLogo(index: number, file: File | undefined) {
+    if (!file) return;
+    setUploadingField(`education_logo-${index}`);
+    try {
+      const url = await onUploadImage(file);
+      updateEducation(index, { school_logo_url: url });
+    } finally {
+      setUploadingField("");
+    }
+  }
+
+  async function clearEducationLogo(index: number) {
+    if (!draft) return;
+    const url = draft.education[index]?.school_logo_url;
+    if (!url) return;
+    await onDeleteImage(url);
+    updateEducation(index, { school_logo_url: "" });
+  }
+
   async function handleSave() {
     await onSaveEdit();
   }
@@ -631,6 +655,100 @@ export function AboutPage({
             )
           ) : null}
         </aside>
+      </section>
+
+      <section className="panel stack">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">Education</p>
+            <h1>學歷</h1>
+          </div>
+        </div>
+        <div className="education-grid">
+          {view.education.map((item, index) =>
+            editable ? (
+              <article key={`${item.school}-${index}`} className="education-card education-card-editing">
+                <div className="stack inline-edit-stack">
+                  <div className="inline-form">
+                    <input
+                      value={draft.education[index].period}
+                      onChange={(e) => updateEducation(index, { period: e.target.value })}
+                      placeholder="年月，例如 2022.09 - 2024.06"
+                    />
+                    <input
+                      value={draft.education[index].school}
+                      onChange={(e) => updateEducation(index, { school: e.target.value })}
+                      placeholder="學校名稱"
+                    />
+                  </div>
+                  <div className="inline-form">
+                    <input
+                      value={draft.education[index].school_logo_url}
+                      onChange={(e) => updateEducation(index, { school_logo_url: e.target.value })}
+                      placeholder="School logo URL"
+                    />
+                    <label className="upload-field">
+                      <span>Upload school logo</span>
+                      <input type="file" accept="image/*" onChange={(e) => uploadEducationLogo(index, e.target.files?.[0])} />
+                      {uploadingField === `education_logo-${index}` ? <small>Uploading...</small> : null}
+                    </label>
+                  </div>
+                  {draft.education[index].school_logo_url ? (
+                    <div className="image-manager">
+                      <img
+                        className="image-preview image-preview-logo"
+                        src={draft.education[index].school_logo_url}
+                        alt={`${draft.education[index].school} logo`}
+                        loading="lazy"
+                      />
+                      <button type="button" className="text-button" onClick={() => clearEducationLogo(index)}>
+                        Remove logo
+                      </button>
+                    </div>
+                  ) : null}
+                  <input
+                    value={draft.education[index].lab_name}
+                    onChange={(e) => updateEducation(index, { lab_name: e.target.value })}
+                    placeholder="實驗室名稱"
+                  />
+                  <textarea
+                    className="inline-edit-textarea"
+                    rows={4}
+                    value={draft.education[index].thesis_title}
+                    onChange={(e) => updateEducation(index, { thesis_title: e.target.value })}
+                    placeholder="畢業專題 / 論文"
+                  />
+                </div>
+              </article>
+            ) : (
+              <article key={`${item.school}-${index}`} className="education-card">
+                <div className="education-card-top">
+                  <span className="label">{item.period}</span>
+                  {item.school_logo_url ? (
+                    <img className="education-logo" src={item.school_logo_url} alt={item.school} loading="lazy" />
+                  ) : null}
+                </div>
+                <h3>{item.school}</h3>
+                {item.lab_name ? <p className="education-lab">{item.lab_name}</p> : null}
+                {item.thesis_title ? <p className="muted">畢業專題 / 論文：{item.thesis_title}</p> : null}
+              </article>
+            ),
+          )}
+        </div>
+        {editable ? (
+          <button
+            type="button"
+            className="text-button"
+            onClick={() =>
+              updateField("education", [
+                ...draft.education,
+                { period: "", school: "", school_logo_url: "", lab_name: "", thesis_title: "" },
+              ])
+            }
+          >
+            Add Education
+          </button>
+        ) : null}
       </section>
 
       {!editable && latestPosts.length ? (

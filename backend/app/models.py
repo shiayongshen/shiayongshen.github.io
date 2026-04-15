@@ -32,6 +32,7 @@ class Profile(Base):
     email: Mapped[str] = mapped_column(String(120))
     avatar_url: Mapped[str] = mapped_column(String(255), default="")
     links_json: Mapped[str] = mapped_column(Text, default="[]")
+    education_json: Mapped[str] = mapped_column(Text, default="[]")
     experiences_json: Mapped[str] = mapped_column(Text, default="[]")
     research_interests_markdown: Mapped[str] = mapped_column(Text, default="")
     publications_json: Mapped[str] = mapped_column(Text, default="[]")

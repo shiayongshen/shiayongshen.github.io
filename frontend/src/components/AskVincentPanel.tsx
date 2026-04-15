@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import type { AskAssistantResponse, AssistantConversationTurn } from "../lib/types";
@@ -191,26 +192,6 @@ export function AskVincentPanel() {
             ))}
           </div>
 
-          <form className="stack" onSubmit={handleSubmit}>
-            <textarea
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              rows={4}
-              disabled={loading || limitReached}
-              placeholder="Ask something like: Is Vincent a good fit for an AI product engineering role?"
-            />
-            <div className="action-row">
-              <button className="primary-button" disabled={loading || limitReached}>
-                {loading ? "Thinking..." : "Ask"}
-              </button>
-              <span className="muted">
-                {limitReached
-                  ? "This session has used all 5 questions."
-                  : `${remainingQuestions} of ${MAX_SESSION_QUESTIONS} questions left in this session.`}
-              </span>
-            </div>
-          </form>
-
           {error ? <p className="error-text">{error}</p> : null}
 
           <div className="ask-thread">
@@ -224,7 +205,14 @@ export function AskVincentPanel() {
                 >
                   <div className="ask-message-label">{message.role === "user" ? "You" : "Ask Vincent AI"}</div>
                   <div className="ask-message-bubble">
-                    <p>{message.role === "assistant" ? message.displayText ?? "" : message.text}</p>
+                    {message.role === "assistant" ? (
+                      <div className="markdown-body ask-message-markdown">
+                        <ReactMarkdown>{message.displayText ?? ""}</ReactMarkdown>
+                        {!message.response ? <span className="ask-stream-caret" aria-hidden="true" /> : null}
+                      </div>
+                    ) : (
+                      <p>{message.text}</p>
+                    )}
 
                     {message.role === "assistant" &&
                     message.response?.show_sources &&
@@ -236,12 +224,9 @@ export function AskVincentPanel() {
                         <div className="ask-skill-grid">
                           {message.response.selected_skills.map((skill) => (
                             <article key={skill.id} className="nested-panel ask-skill-card">
-                              <div className="stack">
-                                <div className="post-meta">
-                                  <strong>{skill.skill_name}</strong>
-                                  <span>{skill.skill_type}</span>
-                                </div>
-                                <p className="muted">{skill.summary}</p>
+                              <div className="post-meta">
+                                <strong>{skill.skill_name}</strong>
+                                <span>{skill.skill_type}</span>
                               </div>
                             </article>
                           ))}
@@ -282,6 +267,26 @@ export function AskVincentPanel() {
 
             <div ref={threadEndRef} />
           </div>
+
+          <form className="stack ask-composer" onSubmit={handleSubmit}>
+            <textarea
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              rows={4}
+              disabled={loading || limitReached}
+              placeholder="Ask something like: Is Vincent a good fit for an AI product engineering role?"
+            />
+            <div className="action-row">
+              <button className="primary-button" disabled={loading || limitReached}>
+                {loading ? "Thinking..." : "Ask"}
+              </button>
+              <span className="muted">
+                {limitReached
+                  ? "This session has used all 5 questions."
+                  : `${remainingQuestions} of ${MAX_SESSION_QUESTIONS} questions left in this session.`}
+              </span>
+            </div>
+          </form>
         </section>
       ) : null}
 

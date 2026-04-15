@@ -356,8 +356,17 @@ input[type="file"] {
   gap: 10px;
 }
 
+.hero-copy .hero-highlights {
+  margin-top: 12px;
+}
+
+.hero-copy .link-row {
+  margin-top: 18px;
+}
+
 .ask-chip-row,
-.ask-skill-grid {
+.ask-skill-grid,
+.education-grid {
   display: grid;
   gap: 12px;
 }
@@ -370,9 +379,11 @@ input[type="file"] {
 }
 
 .ask-popover {
+  display: flex;
+  flex-direction: column;
   width: min(440px, calc(100vw - 24px));
   max-height: min(78vh, 760px);
-  overflow: auto;
+  overflow: hidden;
   margin-bottom: 14px;
   border-radius: 26px;
   background: rgba(255, 252, 246, 0.96);
@@ -410,6 +421,11 @@ input[type="file"] {
   cursor: pointer;
 }
 
+.ask-panel {
+  gap: 18px;
+  min-height: min(78vh, 760px);
+}
+
 .ask-panel textarea {
   min-height: 112px;
 }
@@ -421,23 +437,23 @@ input[type="file"] {
 .ask-thread {
   display: grid;
   gap: 14px;
+  flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ask-composer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding-top: 12px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0), rgba(255, 252, 246, 0.98) 18%);
 }
 
 .ask-empty p,
 .ask-message-bubble p {
   margin: 0;
-}
-
-.ask-message-typing .ask-message-bubble p::after {
-  content: "";
-  display: inline-block;
-  width: 0.58ch;
-  height: 1em;
-  margin-left: 2px;
-  vertical-align: -0.14em;
-  background: rgba(17, 71, 57, 0.4);
-  animation: ask-caret-blink 900ms steps(1) infinite;
 }
 
 .ask-message {
@@ -468,6 +484,24 @@ input[type="file"] {
   border-radius: 22px;
 }
 
+.ask-message-markdown > :first-child {
+  margin-top: 0;
+}
+
+.ask-message-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.ask-stream-caret {
+  display: inline-block;
+  width: 0.58ch;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.14em;
+  background: rgba(17, 71, 57, 0.4);
+  animation: ask-caret-blink 900ms steps(1) infinite;
+}
+
 .ask-message-user .ask-message-bubble {
   max-width: 82%;
   background: linear-gradient(135deg, var(--brand), #2f8b73);
@@ -490,6 +524,43 @@ input[type="file"] {
 
 .ask-skill-card {
   height: 100%;
+  padding: 14px 16px;
+}
+
+.education-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.education-card {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid rgba(17, 71, 57, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.education-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.education-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 16px;
+  background: rgba(255, 248, 239, 0.95);
+  border: 1px solid rgba(17, 71, 57, 0.08);
+  padding: 8px;
+}
+
+.education-lab {
+  margin: 0;
+  font-weight: 700;
+  color: var(--brand-strong);
 }
 
 .hero-card {
@@ -1155,7 +1226,8 @@ textarea {
   }
 
   .ask-chip-row,
-  .ask-skill-grid {
+  .ask-skill-grid,
+  .education-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1167,6 +1239,7 @@ textarea {
   .ask-popover {
     width: min(100vw - 12px, 440px);
     max-height: min(74vh, 680px);
+    min-height: min(74vh, 680px);
     margin-bottom: 10px;
   }
 
