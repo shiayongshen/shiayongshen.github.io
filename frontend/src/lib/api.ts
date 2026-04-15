@@ -1,4 +1,13 @@
-import type { BlogComment, BlogPost, BlogPostInput, BlogPostMetric, GuestbookEntry, LoginResponse, Profile } from "./types";
+import type {
+  AskAssistantResponse,
+  BlogComment,
+  BlogPost,
+  BlogPostInput,
+  BlogPostMetric,
+  GuestbookEntry,
+  LoginResponse,
+  Profile,
+} from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 
@@ -30,6 +39,11 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
 
 export const api = {
   getProfile: () => request<Profile>("/profile"),
+  askAssistant: (question: string) =>
+    request<AskAssistantResponse>("/ask", {
+      method: "POST",
+      body: JSON.stringify({ question }),
+    }),
   getBlogPosts: () => request<BlogPost[]>("/blog-posts"),
   getBlogPost: (slug: string) => request<BlogPost>(`/blog-posts/${slug}`),
   getBlogComments: (slug: string) => request<BlogComment[]>(`/blog-posts/${slug}/comments`),
@@ -93,6 +107,8 @@ export const api = {
     ),
   adminDeleteBlogComment: (token: string, slug: string, commentId: number) =>
     request<void>(`/admin/blog-posts/${slug}/comments/${commentId}`, { method: "DELETE" }, token),
+  adminSyncAssistantKnowledge: (token: string) =>
+    request<{ status: string }>("/admin/assistant/sync", { method: "POST" }, token),
   adminDeletePost: (token: string, slug: string) =>
     request<void>(`/admin/blog-posts/${slug}`, { method: "DELETE" }, token),
   adminGetGuestbook: (token: string) =>

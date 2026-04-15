@@ -11,11 +11,16 @@ from PIL import Image, ImageOps
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
+from .assistant import answer_question, sync_knowledge_base
 from .auth import authenticate_admin, create_access_token, get_current_admin
 from .config import settings
 from .database import Base, SessionLocal, engine, get_db
-from .models import BlogComment, BlogPost, GuestbookEntry, Profile, UploadedImage
+from .models import BlogComment, BlogPost, GuestbookEntry, Profile, SkillCard, UploadedImage
 from .schemas import (
+    AskAssistantRequest,
+    AskAssistantResponse,
+    AssistantRelatedLink,
+    AssistantSkillCardRead,
     BlogCommentCreate,
     BlogCommentRead,
     BlogCommentUpdate,
@@ -91,6 +96,8 @@ def on_startup() -> None:
     ensure_blog_post_metrics_schema()
     with SessionLocal() as db:
         seed_database(db)
+        sync_knowledge_base(db)
+        db.commit()
 
 
 def serialize_post(post: BlogPost) -> BlogPostRead:
@@ -118,6 +125,18 @@ def serialize_blog_comment(comment: BlogComment) -> BlogCommentRead:
         message=comment.message,
         approved=comment.approved,
         created_at=comment.created_at,
+    )
+
+
+def serialize_skill_card(card: SkillCard) -> AssistantSkillCardRead:
+    return AssistantSkillCardRead(
+        id=card.id,
+        skill_name=card.skill_name,
+        skill_type=card.skill_type,
+        summary=card.summary,
+        tags=json.loads(card.tags_json),
+        evidence_points=json.loads(card.evidence_json),
+        url=card.url,
     )
 
 
@@ -252,6 +271,31 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
     token = create_access_token(user.username)
     return LoginResponse(token=TokenResponse(access_token=token), username=user.username)
+
+
+@app.post(f"{settings.api_prefix}/ask", response_model=AskAssistantResponse)
+def ask_assistant(payload: AskAssistantRequest, db: Session = Depends(get_db)) -> AskAssistantResponse:
+    answer, ranked_cards = answer_question(db, payload.question)
+    selected_cards = [serialize_skill_card(item.card) for item in ranked_cards]
+    seen_links: set[str] = set()
+    related_links: list[AssistantRelatedLink] = []
+    for item in ranked_cards:
+        if not item.card.url or item.card.url in seen_links:
+            continue
+        seen_links.add(item.card.url)
+        related_links.append(
+            AssistantRelatedLink(
+                title=item.card.skill_name,
+                url=item.card.url,
+                type=item.card.skill_type,
+            )
+        )
+
+    return AskAssistantResponse(
+        answer=answer,
+        selected_skills=selected_cards,
+        related_links=related_links,
+    )
 
 
 @app.get(f"{settings.api_prefix}/profile", response_model=ProfileRead)
@@ -419,6 +463,7 @@ def admin_update_profile(
     )
     profile.overview_section_order_json = json.dumps(payload.overview_section_order, ensure_ascii=False)
     profile.skills_markdown = payload.skills_markdown
+    sync_knowledge_base(db)
     db.commit()
     db.refresh(profile)
     return serialize_profile(profile)
@@ -456,6 +501,8 @@ def admin_create_post(
         post.created_at = payload.created_at
         post.updated_at = payload.created_at
     db.add(post)
+    db.flush()
+    sync_knowledge_base(db)
     db.commit()
     db.refresh(post)
     return serialize_post(post)
@@ -489,6 +536,7 @@ def admin_update_post(
             comment.post_slug = payload.slug
     if payload.created_at:
         post.created_at = payload.created_at
+    sync_knowledge_base(db)
     db.commit()
     db.refresh(post)
     return serialize_post(post)
@@ -505,6 +553,7 @@ def admin_delete_post(
         raise HTTPException(status_code=404, detail="Blog post not found")
     db.query(BlogComment).filter(BlogComment.post_slug == slug).delete()
     db.delete(post)
+    sync_knowledge_base(db)
     db.commit()
 
 
@@ -572,6 +621,16 @@ def admin_delete_blog_comment(
         raise HTTPException(status_code=404, detail="Comment not found")
     db.delete(comment)
     db.commit()
+
+
+@app.post(f"{settings.api_prefix}/admin/assistant/sync")
+def admin_sync_assistant_knowledge(
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    sync_knowledge_base(db)
+    db.commit()
+    return {"status": "ok"}
 
 
 @app.get(f"{settings.api_prefix}/admin/guestbook", response_model=list[GuestbookRead])

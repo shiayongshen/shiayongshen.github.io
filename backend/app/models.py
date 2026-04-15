@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Integer, LargeBinary, String, Text
+from sqlalchemy import Boolean, DateTime, Float, Integer, LargeBinary, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -71,6 +71,39 @@ class BlogComment(Base):
     message: Mapped[str] = mapped_column(Text)
     approved: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class KnowledgeItem(Base):
+    __tablename__ = "knowledge_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    source_key: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    source_type: Mapped[str] = mapped_column(String(50), index=True)
+    source_id: Mapped[str] = mapped_column(String(255), index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    summary: Mapped[str] = mapped_column(Text, default="")
+    content: Mapped[str] = mapped_column(Text, default="")
+    url: Mapped[str] = mapped_column(String(255), default="")
+    published: Mapped[bool] = mapped_column(Boolean, default=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class SkillCard(Base):
+    __tablename__ = "skill_cards"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    knowledge_source_key: Mapped[str] = mapped_column(String(255), index=True)
+    skill_name: Mapped[str] = mapped_column(String(255), index=True)
+    skill_type: Mapped[str] = mapped_column(String(50), index=True)
+    summary: Mapped[str] = mapped_column(Text, default="")
+    tags_json: Mapped[str] = mapped_column(Text, default="[]")
+    questions_json: Mapped[str] = mapped_column(Text, default="[]")
+    evidence_json: Mapped[str] = mapped_column(Text, default="[]")
+    search_text: Mapped[str] = mapped_column(Text, default="")
+    url: Mapped[str] = mapped_column(String(255), default="")
+    priority: Mapped[float] = mapped_column(Float, default=0.5)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 
 class UploadedImage(Base):

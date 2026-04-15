@@ -128,6 +128,32 @@ class BlogPostMetricResponse(BaseModel):
     like_count: int
 
 
+class AssistantSkillCardRead(BaseModel):
+    id: int
+    skill_name: str
+    skill_type: str
+    summary: str
+    tags: list[str]
+    evidence_points: list[str]
+    url: str
+
+
+class AssistantRelatedLink(BaseModel):
+    title: str
+    url: str
+    type: str
+
+
+class AskAssistantRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+
+
+class AskAssistantResponse(BaseModel):
+    answer: str
+    selected_skills: list[AssistantSkillCardRead]
+    related_links: list[AssistantRelatedLink]
+
+
 class GuestbookCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     message: str = Field(min_length=1, max_length=1000)

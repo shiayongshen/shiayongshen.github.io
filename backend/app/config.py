@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = "changeme123"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    openai_api_key: str = ""
+    openai_model: str = ""
 
     @property
     def get_database_url(self) -> str:

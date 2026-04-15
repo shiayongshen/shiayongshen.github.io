@@ -356,6 +356,42 @@ input[type="file"] {
   gap: 10px;
 }
 
+.ask-chip-row,
+.ask-skill-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.ask-chip-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ask-chip {
+  padding: 14px 16px;
+  border: 1px solid rgba(17, 71, 57, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--brand-strong);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ask-panel textarea {
+  min-height: 112px;
+}
+
+.ask-response p {
+  margin: 0;
+}
+
+.ask-skill-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ask-skill-card {
+  height: 100%;
+}
+
 .hero-card {
   width: min(280px, 100%);
   padding: 28px;
@@ -1003,6 +1039,11 @@ textarea {
   }
 
   .latest-posts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ask-chip-row,
+  .ask-skill-grid {
     grid-template-columns: 1fr;
   }
 

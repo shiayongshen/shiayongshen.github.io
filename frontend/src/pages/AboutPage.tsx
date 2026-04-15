@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import type { BlogPost, ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
+import { AskVincentPanel } from "../components/AskVincentPanel";
 import { MarkdownCard } from "../components/MarkdownCard";
 import { Seo } from "../components/Seo";
 
@@ -631,6 +632,8 @@ export function AboutPage({
           ) : null}
         </aside>
       </section>
+
+      {!editable ? <AskVincentPanel /> : null}
 
       {!editable && latestPosts.length ? (
         <section className="panel stack">

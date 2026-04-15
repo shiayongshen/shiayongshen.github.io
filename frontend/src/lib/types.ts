@@ -80,6 +80,28 @@ export type BlogPostMetric = {
   like_count: number;
 };
 
+export type AssistantSkillCard = {
+  id: number;
+  skill_name: string;
+  skill_type: string;
+  summary: string;
+  tags: string[];
+  evidence_points: string[];
+  url: string;
+};
+
+export type AssistantRelatedLink = {
+  title: string;
+  url: string;
+  type: string;
+};
+
+export type AskAssistantResponse = {
+  answer: string;
+  selected_skills: AssistantSkillCard[];
+  related_links: AssistantRelatedLink[];
+};
+
 export type GuestbookEntry = {
   id: number;
   name: string;
