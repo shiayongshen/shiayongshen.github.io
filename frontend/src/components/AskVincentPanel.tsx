@@ -184,13 +184,15 @@ export function AskVincentPanel() {
             </button>
           </div>
 
-          <div className="ask-chip-row">
-            {QUICK_QUESTIONS.map((item) => (
-              <button key={item} type="button" className="ask-chip" onClick={() => ask(item)} disabled={loading || limitReached}>
-                {item}
-              </button>
-            ))}
-          </div>
+          {!messages.length ? (
+            <div className="ask-chip-row">
+              {QUICK_QUESTIONS.map((item) => (
+                <button key={item} type="button" className="ask-chip" onClick={() => ask(item)} disabled={loading || limitReached}>
+                  {item}
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           {error ? <p className="error-text">{error}</p> : null}
 
@@ -224,10 +226,21 @@ export function AskVincentPanel() {
                         <div className="ask-skill-grid">
                           {message.response.selected_skills.map((skill) => (
                             <article key={skill.id} className="nested-panel ask-skill-card">
-                              <div className="post-meta">
-                                <strong>{skill.skill_name}</strong>
-                                <span>{skill.skill_type}</span>
-                              </div>
+                              <div className="ask-skill-card-name">{skill.skill_name}</div>
+                              <div className="ask-skill-card-type">{skill.skill_type}</div>
+                              {skill.url ? (
+                                /^https?:\/\//.test(skill.url) ? (
+                                  <a href={skill.url} target="_blank" rel="noreferrer" className="primary-link">
+                                    Open
+                                  </a>
+                                ) : (
+                                  <Link to={skill.url} className="primary-link">
+                                    Open
+                                  </Link>
+                                )
+                              ) : (
+                                null
+                              )}
                             </article>
                           ))}
                         </div>

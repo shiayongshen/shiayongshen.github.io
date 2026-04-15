@@ -16,6 +16,7 @@ from .schemas import AssistantConversationTurn
 
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9][a-z0-9\-\+#\.]{1,}")
+CHINESE_CHARACTER_PATTERN = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
 SOCIAL_TOKENS = {
     "hi",
     "hello",
@@ -48,6 +49,10 @@ def _tokenize(value: str) -> list[str]:
     return TOKEN_PATTERN.findall(value.lower())
 
 
+def _prefers_chinese(value: str) -> bool:
+    return bool(CHINESE_CHARACTER_PATTERN.search(value))
+
+
 def _safe_json_loads(value: str, default: list[str] | None = None) -> list[str]:
     if not value:
         return default or []
@@ -65,6 +70,7 @@ def _build_search_text(*parts: str) -> str:
 def _build_profile_cards(profile: Profile) -> list[tuple[KnowledgeItem, SkillCard]]:
     items: list[tuple[KnowledgeItem, SkillCard]] = []
     links = _safe_json_loads(profile.links_json)
+    education = _safe_json_loads(profile.education_json)
     experiences = _safe_json_loads(profile.experiences_json)
     projects = _safe_json_loads(profile.projects_json)
     publications = _safe_json_loads(profile.publications_json)
@@ -116,6 +122,55 @@ def _build_profile_cards(profile: Profile) -> list[tuple[KnowledgeItem, SkillCar
         updated_at=profile.updated_at,
     )
     items.append((profile_item, profile_card))
+
+    for index, entry in enumerate(education):
+        school = entry.get("school", "")
+        department = entry.get("department_name", "")
+        lab_name = entry.get("lab_name", "")
+        period = entry.get("period", "")
+        thesis_title = entry.get("thesis_title", "")
+        title_parts = [school, department]
+        title = " - ".join(part for part in title_parts if part) or f"Education {index + 1}"
+        summary = _build_search_text(period, lab_name, thesis_title)
+        item = KnowledgeItem(
+            source_key=f"education:{index}",
+            source_type="education",
+            source_id=str(index),
+            title=title,
+            summary=period,
+            content=_build_search_text(school, department, lab_name, thesis_title),
+            url="/",
+            published=True,
+            updated_at=profile.updated_at,
+        )
+        card = SkillCard(
+            knowledge_source_key=item.source_key,
+            skill_name=title,
+            skill_type="education",
+            summary=summary or period or school,
+            tags_json=json.dumps(
+                ["education", school, department, lab_name, "academic", "thesis"],
+                ensure_ascii=False,
+            ),
+            questions_json=json.dumps(
+                [
+                    "What is Vincent's educational background?",
+                    f"Where did Vincent study {department or 'this field'}?",
+                    "What lab or thesis did Vincent work on?",
+                ],
+                ensure_ascii=False,
+            ),
+            evidence_json=json.dumps(
+                [period, school, department, lab_name, thesis_title],
+                ensure_ascii=False,
+            ),
+            search_text=_build_search_text(title, period, school, department, lab_name, thesis_title),
+            url="/",
+            priority=0.87,
+            enabled=True,
+            updated_at=profile.updated_at,
+        )
+        items.append((item, card))
 
     for index, experience in enumerate(experiences):
         title = f"{experience.get('role', '')} at {experience.get('company', '')}".strip()
@@ -338,7 +393,9 @@ def search_skill_cards(db: Session, question: str, limit: int = 5) -> list[Ranke
             overlap = sum(1 for token in question_tokens if token in lower_searchable)
 
         score = float(overlap) + (card.priority or 0)
-        if card.skill_type in {"profile", "experience"} and {"who", "about", "background"} & set(question_tokens):
+        if card.skill_type in {"profile", "experience", "education"} and {"who", "about", "background"} & set(question_tokens):
+            score += 0.6
+        if card.skill_type == "education" and {"education", "study", "school", "degree", "lab", "thesis", "master", "university"} & set(question_tokens):
             score += 0.6
         if card.skill_type == "post" and {"read", "article", "blog", "post"} & set(question_tokens):
             score += 0.5
@@ -417,6 +474,10 @@ def _build_openai_request_body(
                 "You are a site assistant for Vincent Hsia. "
                 "Use conversation history only to resolve context like pronouns, follow-up references, or topic continuity. "
                 "Answer using only the provided site knowledge. "
+                "Reply only in Traditional Chinese or English. "
+                "If the user writes in Chinese, reply in Traditional Chinese only, never Simplified Chinese. "
+                "If the user writes in English, reply in English. "
+                "Do not mix Simplified Chinese into the reply. "
                 "Keep replies short by default: 1 short paragraph or 2-4 bullets. "
                 "Decide the response style from the user's message yourself. "
                 "If the user is only greeting you, thanking you, or making a vague social opener, reply in one short sentence and invite a more specific question. "
@@ -646,7 +707,10 @@ def generate_answer_with_openai(
 
 
 def generate_fallback_answer(question: str, ranked_cards: list[RankedSkillCard]) -> str:
+    prefers_chinese = _prefers_chinese(question)
     if not ranked_cards:
+        if prefers_chinese:
+            return "我目前找不到足夠的站內內容來回答這個問題。你可以改問 Vincent 的背景、專案、發表或部落格文章。"
         return (
             "I could not find enough site content to answer that yet. "
             "Try asking about Vincent's background, projects, publications, or blog posts."
@@ -654,6 +718,17 @@ def generate_fallback_answer(question: str, ranked_cards: list[RankedSkillCard])
 
     lead = ranked_cards[0]
     supporting = ranked_cards[1:3]
+    if prefers_chinese:
+        lines = [f"根據站內內容，{lead.card.summary or lead.card.skill_name}。"]
+        if supporting:
+            support_names = "、".join(item.card.skill_name for item in supporting)
+            lines.append(f"相關的延伸參考包括 {support_names}。")
+        if any(item.card.skill_type == "post" for item in ranked_cards):
+            lines.append("如果你想深入了解，可以先看下面相關的部落格文章。")
+        else:
+            lines.append(f"這個問題目前最相關的內容是「{lead.card.skill_name}」。")
+        return "".join(lines)
+
     lines = [f"Based on the site content, {lead.card.summary or lead.card.skill_name}."]
     if supporting:
         support_names = ", ".join(item.card.skill_name for item in supporting)

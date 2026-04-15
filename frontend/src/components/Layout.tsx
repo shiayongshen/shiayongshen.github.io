@@ -33,9 +33,7 @@ export function Layout({ isAdmin, onLogout }: LayoutProps) {
                 Logout
               </button>
             </>
-          ) : (
-            <NavLink to="/login">Admin</NavLink>
-          )}
+          ) : null}
         </nav>
       </header>
 
