@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { Seo } from "../components/Seo";
 import type { GuestbookEntry } from "../lib/types";
 
 type GuestbookPageProps = {
@@ -64,6 +65,11 @@ export function GuestbookPage({ entries, isAdmin, onSubmit, onSaveEntry, onDelet
 
   return (
     <div className="grid-two guestbook-layout">
+      <Seo
+        title="Guestbook | Vincent Hsia"
+        description="Leave a note and say hello. Approved messages from visitors are published in the guestbook."
+        path="/guestbook"
+      />
       <section className="panel">
         <div className="section-heading">
           <span>Leave a message</span>

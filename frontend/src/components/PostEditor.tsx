@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import type { BlogPost } from "../lib/types";
+import type { BlogPost, BlogPostInput } from "../lib/types";
 
-type DraftPost = Omit<BlogPost, "created_at" | "updated_at">;
+type DraftPost = BlogPostInput;
 
 type PostEditorProps = {
   post?: BlogPost;

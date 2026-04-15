@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { Seo } from "../components/Seo";
 
 type LoginPageProps = {
   onLogin: (username: string, password: string) => Promise<void>;
@@ -21,6 +22,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   return (
     <section className="panel auth-card">
+      <Seo
+        title="Admin Login | Vincent Hsia"
+        description="Administrator access for the Vincent Hsia site."
+        path="/login"
+        robots="noindex,nofollow"
+      />
       <p className="eyebrow">Admin Login</p>
       <h1>Manage your site</h1>
       <form className="stack" onSubmit={handleSubmit}>

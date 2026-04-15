@@ -1,4 +1,4 @@
-import type { BlogPost, GuestbookEntry, LoginResponse, Profile } from "./types";
+import type { BlogComment, BlogPost, BlogPostInput, BlogPostMetric, GuestbookEntry, LoginResponse, Profile } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 
@@ -32,6 +32,16 @@ export const api = {
   getProfile: () => request<Profile>("/profile"),
   getBlogPosts: () => request<BlogPost[]>("/blog-posts"),
   getBlogPost: (slug: string) => request<BlogPost>(`/blog-posts/${slug}`),
+  getBlogComments: (slug: string) => request<BlogComment[]>(`/blog-posts/${slug}/comments`),
+  createBlogComment: (slug: string, name: string, message: string) =>
+    request<BlogComment>(`/blog-posts/${slug}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ name, message }),
+    }),
+  trackBlogPostView: (slug: string) =>
+    request<BlogPostMetric>(`/blog-posts/${slug}/view`, { method: "POST" }),
+  likeBlogPost: (slug: string) =>
+    request<BlogPostMetric>(`/blog-posts/${slug}/like`, { method: "POST" }),
   getGuestbookEntries: () => request<GuestbookEntry[]>("/guestbook"),
   createGuestbookEntry: (name: string, message: string) =>
     request<GuestbookEntry>("/guestbook", {
@@ -56,18 +66,33 @@ export const api = {
       token,
     ),
   adminGetPosts: (token: string) => request<BlogPost[]>("/admin/blog-posts", undefined, token),
-  adminCreatePost: (token: string, post: Omit<BlogPost, "created_at" | "updated_at">) =>
+  adminCreatePost: (token: string, post: BlogPostInput) =>
     request<BlogPost>(
       "/admin/blog-posts",
       { method: "POST", body: JSON.stringify(post) },
       token,
     ),
-  adminUpdatePost: (token: string, slug: string, post: Omit<BlogPost, "created_at" | "updated_at">) =>
+  adminUpdatePost: (token: string, slug: string, post: BlogPostInput) =>
     request<BlogPost>(
       `/admin/blog-posts/${slug}`,
       { method: "PUT", body: JSON.stringify(post) },
       token,
     ),
+  adminGetBlogComments: (token: string, slug: string) =>
+    request<BlogComment[]>(`/admin/blog-posts/${slug}/comments`, undefined, token),
+  adminUpdateBlogComment: (
+    token: string,
+    slug: string,
+    commentId: number,
+    comment: Pick<BlogComment, "name" | "message" | "approved">,
+  ) =>
+    request<BlogComment>(
+      `/admin/blog-posts/${slug}/comments/${commentId}`,
+      { method: "PUT", body: JSON.stringify(comment) },
+      token,
+    ),
+  adminDeleteBlogComment: (token: string, slug: string, commentId: number) =>
+    request<void>(`/admin/blog-posts/${slug}/comments/${commentId}`, { method: "DELETE" }, token),
   adminDeletePost: (token: string, slug: string) =>
     request<void>(`/admin/blog-posts/${slug}`, { method: "DELETE" }, token),
   adminGetGuestbook: (token: string) =>

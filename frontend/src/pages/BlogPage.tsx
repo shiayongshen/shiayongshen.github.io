@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PostEditor } from "../components/PostEditor";
-import type { BlogPost } from "../lib/types";
+import { Seo } from "../components/Seo";
+import type { BlogPost, BlogPostInput } from "../lib/types";
 
 type BlogPageProps = {
   posts: BlogPost[];
   isAdmin: boolean;
   onCreate: () => void;
   onEdit: (post: BlogPost) => void;
-  onSavePost: (payload: Omit<BlogPost, "created_at" | "updated_at">, originalSlug?: string) => Promise<void>;
+  onSavePost: (payload: BlogPostInput, originalSlug?: string) => Promise<void>;
   onDeletePost: (slug: string) => Promise<void>;
   onUploadImage: (file: File) => Promise<string>;
   onDeleteImage: (url: string) => Promise<void>;
@@ -25,9 +26,24 @@ export function BlogPage({
   onDeleteImage,
 }: BlogPageProps) {
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const publishedPosts = posts.filter((post) => post.published);
+  const latestCoverImage = publishedPosts[0]?.cover_image_url;
 
   return (
     <div className="stack">
+      <Seo
+        title="Blog | Vincent Hsia"
+        description="Technical notes, experiments, and writing on engineering, AI workflows, and building useful systems."
+        path="/blog"
+        image={latestCoverImage}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          name: "Vincent Hsia Blog",
+          description: "Technical notes, experiments, and writing on engineering, AI workflows, and building useful systems.",
+          url: "/blog",
+        }}
+      />
       <section className="section-header">
         <div>
           <p className="eyebrow">Blog</p>

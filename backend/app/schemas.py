@@ -97,8 +97,35 @@ class BlogPostUpdate(BlogPostBase):
 
 
 class BlogPostRead(BlogPostBase):
+    view_count: int
+    like_count: int
     created_at: datetime
     updated_at: datetime
+
+
+class BlogCommentCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    message: str = Field(min_length=1, max_length=1000)
+
+
+class BlogCommentUpdate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    message: str = Field(min_length=1, max_length=1000)
+    approved: bool
+
+
+class BlogCommentRead(BaseModel):
+    id: int
+    post_slug: str
+    name: str
+    message: str
+    approved: bool
+    created_at: datetime
+
+
+class BlogPostMetricResponse(BaseModel):
+    view_count: int
+    like_count: int
 
 
 class GuestbookCreate(BaseModel):

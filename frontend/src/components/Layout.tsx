@@ -17,7 +17,7 @@ export function Layout({ isAdmin, onLogout }: LayoutProps) {
           <span className="brand-mark">VH</span>
           <div>
             <strong>Vincent Hsia</strong>
-            <p>Writing, building, shipping.</p>
+            <p>AI-empowered engineer.</p>
           </div>
         </Link>
 

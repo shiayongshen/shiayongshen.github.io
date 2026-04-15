@@ -1,0 +1,17 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#F4EFE6"/>
+  <rect x="40" y="40" width="1120" height="550" rx="32" fill="url(#paint0_linear)"/>
+  <rect x="86" y="88" width="112" height="112" rx="28" fill="#1D6B57"/>
+  <text x="142" y="160" text-anchor="middle" fill="white" font-family="Manrope, Arial, sans-serif" font-size="52" font-weight="800">VH</text>
+  <text x="86" y="292" fill="#1D261F" font-family="Manrope, Arial, sans-serif" font-size="68" font-weight="800">Vincent Hsia</text>
+  <text x="86" y="372" fill="#114739" font-family="Manrope, Arial, sans-serif" font-size="42" font-weight="700">AI-empowered engineer.</text>
+  <text x="86" y="438" fill="#5F645F" font-family="Noto Sans TC, Arial, sans-serif" font-size="28" font-weight="500">
+    Building useful systems, writing technical notes, and shipping products with AI.
+  </text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="40" y1="40" x2="1160" y2="590" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8EF"/>
+      <stop offset="1" stop-color="#EFE3D2"/>
+    </linearGradient>
+  </defs>
+</svg>

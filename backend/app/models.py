@@ -56,8 +56,21 @@ class BlogPost(Base):
     content_markdown: Mapped[str] = mapped_column(Text)
     tags_json: Mapped[str] = mapped_column(Text, default="[]")
     published: Mapped[bool] = mapped_column(Boolean, default=True)
+    view_count: Mapped[int] = mapped_column(Integer, default=0)
+    like_count: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class BlogComment(Base):
+    __tablename__ = "blog_comments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    post_slug: Mapped[str] = mapped_column(String(200), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    message: Mapped[str] = mapped_column(Text)
+    approved: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class UploadedImage(Base):

@@ -9,7 +9,7 @@ import { GuestbookPage } from "./pages/GuestbookPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PostPage } from "./pages/PostPage";
 import { api } from "./lib/api";
-import type { BlogPost, GuestbookEntry, Profile } from "./lib/types";
+import type { BlogPost, BlogPostInput, GuestbookEntry, Profile } from "./lib/types";
 
 function BlogPostRoute({
   posts,
@@ -23,7 +23,7 @@ function BlogPostRoute({
   posts: BlogPost[];
   isAdmin: boolean;
   onEdit: (post: BlogPost) => void;
-  onSavePost: (payload: Omit<BlogPost, "created_at" | "updated_at">, originalSlug?: string) => Promise<void>;
+  onSavePost: (payload: BlogPostInput, originalSlug?: string) => Promise<void>;
   onDeletePost: (slug: string) => Promise<void>;
   onUploadImage: (file: File) => Promise<string>;
   onDeleteImage: (url: string) => Promise<void>;
@@ -52,7 +52,7 @@ function BlogEditorRoute({
   onDeleteImage,
 }: {
   posts: BlogPost[];
-  onSave: (payload: Omit<BlogPost, "created_at" | "updated_at">, originalSlug?: string) => Promise<void>;
+  onSave: (payload: BlogPostInput, originalSlug?: string) => Promise<void>;
   onDelete: (slug: string) => Promise<void>;
   onCancel: () => void;
   onUploadImage: (file: File) => Promise<string>;
@@ -170,7 +170,7 @@ export default function App() {
   }
 
   async function handleSavePost(
-    payload: Omit<BlogPost, "created_at" | "updated_at">,
+    payload: BlogPostInput,
     originalSlug?: string,
   ) {
     if (!token) return;
@@ -224,6 +224,7 @@ export default function App() {
                 onDraftChange={setProfileDraft}
                 onUploadImage={handleUploadImage}
                 onDeleteImage={handleDeleteImage}
+                seoPath="/"
               />
             }
           />
@@ -304,6 +305,8 @@ export default function App() {
                   onDraftChange={setProfileDraft}
                   onUploadImage={handleUploadImage}
                   onDeleteImage={handleDeleteImage}
+                  seoPath="/admin/about"
+                  seoRobots="noindex,nofollow"
                 />
               ) : (
                 <Navigate to="/login" replace />

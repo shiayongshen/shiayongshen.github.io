@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import type { BlogPost, ExperienceItem, LinkItem, Profile, ProjectItem, PublicationItem } from "../lib/types";
 import { MarkdownCard } from "../components/MarkdownCard";
+import { Seo } from "../components/Seo";
 
 type ProfileDraft = Omit<Profile, "id" | "updated_at">;
 type OverviewSectionId = "research_interests" | "skills" | "publications" | "projects";
@@ -66,6 +67,8 @@ type AboutPageProps = {
   onDraftChange: (draft: ProfileDraft) => void;
   onUploadImage: (file: File) => Promise<string>;
   onDeleteImage: (url: string) => Promise<void>;
+  seoPath?: string;
+  seoRobots?: string;
 };
 
 function updateArrayItem<T>(items: T[], index: number, patch: Partial<T>): T[] {
@@ -84,6 +87,8 @@ export function AboutPage({
   onDraftChange,
   onUploadImage,
   onDeleteImage,
+  seoPath = "/",
+  seoRobots = "index,follow",
 }: AboutPageProps) {
   const [uploadingField, setUploadingField] = useState("");
   const [draggedSectionId, setDraggedSectionId] = useState<OverviewSectionId | null>(null);
@@ -96,6 +101,10 @@ export function AboutPage({
   const view = profile ? (editable ? draft : profile) : null;
   const latestPosts = posts.filter((post) => post.published).slice(0, 3);
   const overviewSectionOrder = normalizeOverviewSectionOrder(view?.overview_section_order);
+  const seoTitle = `${view?.full_name ?? "Vincent Hsia"} | AI-empowered Engineer`;
+  const seoDescription =
+    view?.headline ||
+    "AI-empowered engineer building useful systems, writing technical notes, and turning ideas into shipped products.";
 
   useEffect(() => {
     if (editable || !showLandingIntro) return;
@@ -483,11 +492,30 @@ export function AboutPage({
 
   return (
     <div className={`stack${showLandingIntro ? " home-intro-active" : ""}`}>
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        path={seoPath}
+        image={view.avatar_url || latestPosts[0]?.cover_image_url}
+        robots={seoRobots}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          name: view.full_name,
+          jobTitle: "AI-empowered Engineer",
+          description: seoDescription,
+          image: view.avatar_url || undefined,
+          email: view.email || undefined,
+          address: view.location || undefined,
+          url: "/",
+          sameAs: view.links.map((link) => link.url).filter(Boolean),
+        }}
+      />
       {showLandingIntro ? (
         <div className={`home-intro${isLandingIntroClosing ? " home-intro-closing" : ""}`} aria-hidden="true">
           <div className="home-intro-mark">VH</div>
           <p className="home-intro-kicker">Vincent Hsia</p>
-          <h1>Writing, building, shipping.</h1>
+          <h1>AI-empowered engineer.</h1>
           <span className="home-intro-scroll-hint">Scroll to enter</span>
         </div>
       ) : null}
@@ -527,7 +555,7 @@ export function AboutPage({
           </div>
         </aside>
         <div className="hero-copy">
-          <p className="eyebrow">About</p>
+          <p className="eyebrow">AI-empowered Engineer</p>
           {editable ? (
             <div className="stack inline-edit-stack">
               <input value={draft.full_name} onChange={(e) => updateField("full_name", e.target.value)} placeholder="Full name" />
@@ -558,9 +586,18 @@ export function AboutPage({
           ) : (
             <>
               <h1>{view.full_name}</h1>
-              <h2>{view.headline}</h2>
+              <h2>AI-empowered engineer building useful systems and shipping practical products.</h2>
+              <p className="hero-lead">
+                I work at the intersection of software engineering, product thinking, and applied AI.
+                I turn rough ideas into usable tools, technical writing, and production-ready systems.
+              </p>
               <div className="markdown-body intro">
                 <ReactMarkdown>{view.intro_markdown}</ReactMarkdown>
+              </div>
+              <div className="hero-highlights">
+                <span className="tag">Build with AI</span>
+                <span className="tag">Ship end-to-end systems</span>
+                <span className="tag">Write technical notes</span>
               </div>
               <div className="link-row">
                 {view.links.map((link) => (

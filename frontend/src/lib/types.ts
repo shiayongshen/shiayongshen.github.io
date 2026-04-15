@@ -58,8 +58,26 @@ export type BlogPost = {
   content_markdown: string;
   tags: string[];
   published: boolean;
+  view_count: number;
+  like_count: number;
   created_at: string;
   updated_at: string;
+};
+
+export type BlogPostInput = Omit<BlogPost, "created_at" | "updated_at" | "view_count" | "like_count">;
+
+export type BlogComment = {
+  id: number;
+  post_slug: string;
+  name: string;
+  message: string;
+  approved: boolean;
+  created_at: string;
+};
+
+export type BlogPostMetric = {
+  view_count: number;
+  like_count: number;
 };
 
 export type GuestbookEntry = {

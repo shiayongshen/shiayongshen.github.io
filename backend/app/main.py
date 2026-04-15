@@ -14,9 +14,13 @@ from sqlalchemy.orm import Session
 from .auth import authenticate_admin, create_access_token, get_current_admin
 from .config import settings
 from .database import Base, SessionLocal, engine, get_db
-from .models import BlogPost, GuestbookEntry, Profile, UploadedImage
+from .models import BlogComment, BlogPost, GuestbookEntry, Profile, UploadedImage
 from .schemas import (
+    BlogCommentCreate,
+    BlogCommentRead,
+    BlogCommentUpdate,
     BlogPostCreate,
+    BlogPostMetricResponse,
     BlogPostRead,
     BlogPostUpdate,
     GuestbookCreate,
@@ -66,10 +70,25 @@ def ensure_profile_schema() -> None:
         )
 
 
+def ensure_blog_post_metrics_schema() -> None:
+    inspector = inspect(engine)
+    if "blog_posts" not in inspector.get_table_names():
+        return
+    columns = {column["name"] for column in inspector.get_columns("blog_posts")}
+    with engine.begin() as connection:
+        if "view_count" not in columns:
+            connection.execute(text("ALTER TABLE blog_posts ADD COLUMN view_count INTEGER DEFAULT 0"))
+            connection.execute(text("UPDATE blog_posts SET view_count = 0 WHERE view_count IS NULL"))
+        if "like_count" not in columns:
+            connection.execute(text("ALTER TABLE blog_posts ADD COLUMN like_count INTEGER DEFAULT 0"))
+            connection.execute(text("UPDATE blog_posts SET like_count = 0 WHERE like_count IS NULL"))
+
+
 @app.on_event("startup")
 def on_startup() -> None:
     Base.metadata.create_all(bind=engine)
     ensure_profile_schema()
+    ensure_blog_post_metrics_schema()
     with SessionLocal() as db:
         seed_database(db)
 
@@ -84,8 +103,21 @@ def serialize_post(post: BlogPost) -> BlogPostRead:
         content_markdown=post.content_markdown,
         tags=json.loads(post.tags_json),
         published=post.published,
+        view_count=post.view_count,
+        like_count=post.like_count,
         created_at=post.created_at,
         updated_at=post.updated_at,
+    )
+
+
+def serialize_blog_comment(comment: BlogComment) -> BlogCommentRead:
+    return BlogCommentRead(
+        id=comment.id,
+        post_slug=comment.post_slug,
+        name=comment.name,
+        message=comment.message,
+        approved=comment.approved,
+        created_at=comment.created_at,
     )
 
 
@@ -253,6 +285,78 @@ def get_blog_post(slug: str, db: Session = Depends(get_db)) -> BlogPostRead:
     return serialize_post(post)
 
 
+@app.get(f"{settings.api_prefix}/blog-posts/{{slug}}/comments", response_model=list[BlogCommentRead])
+def list_blog_comments(slug: str, db: Session = Depends(get_db)) -> list[BlogCommentRead]:
+    post = (
+        db.query(BlogPost)
+        .filter(BlogPost.slug == slug, BlogPost.published.is_(True))
+        .first()
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+
+    comments = (
+        db.query(BlogComment)
+        .filter(BlogComment.post_slug == slug, BlogComment.approved.is_(True))
+        .order_by(BlogComment.created_at.desc())
+        .all()
+    )
+    return [serialize_blog_comment(comment) for comment in comments]
+
+
+@app.post(
+    f"{settings.api_prefix}/blog-posts/{{slug}}/comments",
+    response_model=BlogCommentRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_blog_comment(slug: str, payload: BlogCommentCreate, db: Session = Depends(get_db)) -> BlogCommentRead:
+    post = (
+        db.query(BlogPost)
+        .filter(BlogPost.slug == slug, BlogPost.published.is_(True))
+        .first()
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+
+    comment = BlogComment(post_slug=slug, name=payload.name, message=payload.message, approved=False)
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return serialize_blog_comment(comment)
+
+
+@app.post(f"{settings.api_prefix}/blog-posts/{{slug}}/view", response_model=BlogPostMetricResponse)
+def track_blog_post_view(slug: str, db: Session = Depends(get_db)) -> BlogPostMetricResponse:
+    post = (
+        db.query(BlogPost)
+        .filter(BlogPost.slug == slug, BlogPost.published.is_(True))
+        .first()
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+
+    post.view_count += 1
+    db.commit()
+    db.refresh(post)
+    return BlogPostMetricResponse(view_count=post.view_count, like_count=post.like_count)
+
+
+@app.post(f"{settings.api_prefix}/blog-posts/{{slug}}/like", response_model=BlogPostMetricResponse)
+def like_blog_post(slug: str, db: Session = Depends(get_db)) -> BlogPostMetricResponse:
+    post = (
+        db.query(BlogPost)
+        .filter(BlogPost.slug == slug, BlogPost.published.is_(True))
+        .first()
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+
+    post.like_count += 1
+    db.commit()
+    db.refresh(post)
+    return BlogPostMetricResponse(view_count=post.view_count, like_count=post.like_count)
+
+
 @app.get(f"{settings.api_prefix}/guestbook", response_model=list[GuestbookRead])
 def list_guestbook_entries(db: Session = Depends(get_db)) -> list[GuestbookRead]:
     entries = (
@@ -379,6 +483,10 @@ def admin_update_post(
     post.content_markdown = payload.content_markdown
     post.tags_json = json.dumps(payload.tags, ensure_ascii=False)
     post.published = payload.published
+    if payload.slug != slug:
+        comments = db.query(BlogComment).filter(BlogComment.post_slug == slug).all()
+        for comment in comments:
+            comment.post_slug = payload.slug
     if payload.created_at:
         post.created_at = payload.created_at
     db.commit()
@@ -395,7 +503,74 @@ def admin_delete_post(
     post = db.query(BlogPost).filter(BlogPost.slug == slug).first()
     if not post:
         raise HTTPException(status_code=404, detail="Blog post not found")
+    db.query(BlogComment).filter(BlogComment.post_slug == slug).delete()
     db.delete(post)
+    db.commit()
+
+
+@app.get(f"{settings.api_prefix}/admin/blog-posts/{{slug}}/comments", response_model=list[BlogCommentRead])
+def admin_list_blog_comments(
+    slug: str,
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+) -> list[BlogCommentRead]:
+    post = db.query(BlogPost).filter(BlogPost.slug == slug).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    comments = (
+        db.query(BlogComment)
+        .filter(BlogComment.post_slug == slug)
+        .order_by(BlogComment.created_at.desc())
+        .all()
+    )
+    return [serialize_blog_comment(comment) for comment in comments]
+
+
+@app.put(
+    f"{settings.api_prefix}/admin/blog-posts/{{slug}}/comments/{{comment_id}}",
+    response_model=BlogCommentRead,
+)
+def admin_update_blog_comment(
+    slug: str,
+    comment_id: int,
+    payload: BlogCommentUpdate,
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+) -> BlogCommentRead:
+    comment = (
+        db.query(BlogComment)
+        .filter(BlogComment.id == comment_id, BlogComment.post_slug == slug)
+        .first()
+    )
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    comment.name = payload.name
+    comment.message = payload.message
+    comment.approved = payload.approved
+    db.commit()
+    db.refresh(comment)
+    return serialize_blog_comment(comment)
+
+
+@app.delete(
+    f"{settings.api_prefix}/admin/blog-posts/{{slug}}/comments/{{comment_id}}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def admin_delete_blog_comment(
+    slug: str,
+    comment_id: int,
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+) -> None:
+    comment = (
+        db.query(BlogComment)
+        .filter(BlogComment.id == comment_id, BlogComment.post_slug == slug)
+        .first()
+    )
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    db.delete(comment)
     db.commit()
 
 
