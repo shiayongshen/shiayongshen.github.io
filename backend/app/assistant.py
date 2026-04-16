@@ -368,8 +368,24 @@ def sync_knowledge_base(db: Session) -> None:
     db.flush()
 
 
-def search_skill_cards(db: Session, question: str, limit: int = 5) -> list[RankedSkillCard]:
+def list_enabled_skill_cards(db: Session) -> list[RankedSkillCard]:
     cards = db.query(SkillCard).filter(SkillCard.enabled.is_(True)).all()
+    ranked: list[RankedSkillCard] = []
+    for card in cards:
+        ranked.append(
+            RankedSkillCard(
+                card=card,
+                tags=[tag for tag in _safe_json_loads(card.tags_json) if tag],
+                questions=[item for item in _safe_json_loads(card.questions_json) if item],
+                evidence=[item for item in _safe_json_loads(card.evidence_json) if item],
+                score=float(card.priority or 0),
+            )
+        )
+    return ranked
+
+
+def search_skill_cards(db: Session, question: str, limit: int = 5) -> list[RankedSkillCard]:
+    cards = list_enabled_skill_cards(db)
     if not cards:
         return []
 
@@ -378,10 +394,10 @@ def search_skill_cards(db: Session, question: str, limit: int = 5) -> list[Ranke
     ranked: list[RankedSkillCard] = []
 
     for card in cards:
-        tags = [tag for tag in _safe_json_loads(card.tags_json) if tag]
-        questions = [item for item in _safe_json_loads(card.questions_json) if item]
-        evidence = [item for item in _safe_json_loads(card.evidence_json) if item]
-        searchable = _build_search_text(card.skill_name, card.summary, card.search_text, " ".join(tags), " ".join(questions))
+        tags = card.tags
+        questions = card.questions
+        evidence = card.evidence
+        searchable = _build_search_text(card.card.skill_name, card.card.summary, card.card.search_text, " ".join(tags), " ".join(questions))
         searchable_tokens = _tokenize(searchable)
         if not searchable_tokens:
             continue
@@ -392,31 +408,136 @@ def search_skill_cards(db: Session, question: str, limit: int = 5) -> list[Ranke
             lower_searchable = searchable.lower()
             overlap = sum(1 for token in question_tokens if token in lower_searchable)
 
-        score = float(overlap) + (card.priority or 0)
-        if card.skill_type in {"profile", "experience", "education"} and {"who", "about", "background"} & set(question_tokens):
+        score = float(overlap) + (card.card.priority or 0)
+        if card.card.skill_type in {"profile", "experience", "education"} and {"who", "about", "background"} & set(question_tokens):
             score += 0.6
-        if card.skill_type == "education" and {"education", "study", "school", "degree", "lab", "thesis", "master", "university"} & set(question_tokens):
+        if card.card.skill_type == "education" and {"education", "study", "school", "degree", "lab", "thesis", "master", "university"} & set(question_tokens):
             score += 0.6
-        if card.skill_type == "post" and {"read", "article", "blog", "post"} & set(question_tokens):
+        if card.card.skill_type == "post" and {"read", "article", "blog", "post"} & set(question_tokens):
             score += 0.5
-        if card.skill_type == "project" and {"project", "build", "built", "system"} & set(question_tokens):
+        if card.card.skill_type == "project" and {"project", "build", "built", "system"} & set(question_tokens):
             score += 0.5
 
         if score <= 0:
             continue
 
-        ranked.append(
-            RankedSkillCard(
-                card=card,
-                tags=tags,
-                questions=questions,
-                evidence=evidence,
-                score=score,
-            )
-        )
+        ranked.append(RankedSkillCard(card=card.card, tags=tags, questions=questions, evidence=evidence, score=score))
 
     ranked.sort(key=lambda item: (item.score, item.card.priority, item.card.updated_at), reverse=True)
     return ranked[: max(1, min(limit, 8))]
+
+
+def _build_skill_card_selection_request_body(
+    question: str,
+    cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+    *,
+    limit: int,
+) -> dict[str, Any]:
+    history_context = [{"role": turn.role, "text": turn.text} for turn in history[-6:]]
+    candidates = [
+        {
+            "source_key": item.card.knowledge_source_key,
+            "skill_name": item.card.skill_name,
+            "skill_type": item.card.skill_type,
+            "summary": item.card.summary,
+            "tags": item.tags[:6],
+            "evidence": item.evidence[:4],
+            "url": item.card.url,
+        }
+        for item in cards
+    ]
+    return {
+        "model": settings.openai_model,
+        "input": [
+            {
+                "role": "system",
+                "content": (
+                    "You select the most relevant site knowledge cards for answering a user question. "
+                    "Return strict JSON only with one field: {\"source_keys\": [\"...\"]}. "
+                    "Choose at most the requested limit. "
+                    "Prefer precision over recall. "
+                    "Use conversation history only to resolve follow-up context. "
+                    "If no cards are useful, return an empty array."
+                ),
+            },
+            {
+                "role": "user",
+                "content": json.dumps(
+                    {
+                        "question": question,
+                        "history": history_context,
+                        "limit": max(1, min(limit, 8)),
+                        "candidate_cards": candidates,
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+        ],
+    }
+
+
+def select_skill_cards_with_openai(
+    question: str,
+    cards: list[RankedSkillCard],
+    history: list[AssistantConversationTurn],
+    *,
+    limit: int,
+) -> list[RankedSkillCard] | None:
+    if not settings.openai_api_key or not settings.openai_model:
+        return None
+    if not cards:
+        return []
+
+    body = _build_skill_card_selection_request_body(question, cards, history, limit=limit)
+    req = request.Request(
+        "https://api.openai.com/v1/responses",
+        data=json.dumps(body).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {settings.openai_api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(req, timeout=20) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (error.HTTPError, error.URLError, TimeoutError, json.JSONDecodeError):
+        return None
+
+    parsed = _extract_json_object(payload)
+    source_keys = parsed.get("source_keys") if parsed else None
+    if not isinstance(source_keys, list):
+        return None
+
+    key_order = [key for key in source_keys if isinstance(key, str)]
+    selected_by_key = {item.card.knowledge_source_key: item for item in cards}
+    selected: list[RankedSkillCard] = []
+    for key in key_order:
+        item = selected_by_key.get(key)
+        if item and item not in selected:
+            selected.append(item)
+        if len(selected) >= max(1, min(limit, 8)):
+            break
+    return selected
+
+
+def select_skill_cards(
+    db: Session,
+    question: str,
+    history: list[AssistantConversationTurn],
+    *,
+    limit: int,
+) -> list[RankedSkillCard]:
+    all_cards = list_enabled_skill_cards(db)
+    if settings.openai_api_key and settings.openai_model:
+        selected = select_skill_cards_with_openai(question, all_cards, history, limit=limit)
+        if selected is not None:
+            return selected
+
+    contextual_question = _build_contextual_question(question, history)
+    return search_skill_cards(db, contextual_question, limit=limit)
 
 
 def _extract_response_text(payload: dict[str, Any]) -> str:
@@ -747,8 +868,7 @@ def answer_question(
     limit: int = 4,
 ) -> tuple[str, bool, list[RankedSkillCard]]:
     normalized_history = _normalize_history(history or [])
-    contextual_question = _build_contextual_question(question, normalized_history)
-    ranked_cards = search_skill_cards(db, contextual_question, limit=limit)
+    ranked_cards = select_skill_cards(db, question, normalized_history, limit=limit)
     answer = generate_answer_with_openai(question, ranked_cards, normalized_history)
     if not answer:
         answer = generate_fallback_answer(question, ranked_cards)
@@ -763,8 +883,7 @@ def stream_answer_question(
     limit: int = 4,
 ) -> tuple[str, bool, list[RankedSkillCard], Iterator[str]]:
     normalized_history = _normalize_history(history or [])
-    contextual_question = _build_contextual_question(question, normalized_history)
-    ranked_cards = search_skill_cards(db, contextual_question, limit=limit)
+    ranked_cards = select_skill_cards(db, question, normalized_history, limit=limit)
     if settings.openai_api_key and settings.openai_model:
         return "", True, ranked_cards, iter_openai_stream(question, ranked_cards, normalized_history)
 
