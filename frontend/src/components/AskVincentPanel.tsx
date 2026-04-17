@@ -21,6 +21,7 @@ type ChatMessage = {
 
 const MAX_HISTORY_TURNS = 8;
 const MAX_SESSION_QUESTIONS = 5;
+const MAX_QUESTION_LENGTH = 2000;
 const SESSION_ID_KEY = "ask-vincent-session-id";
 const SESSION_STORAGE_KEY = "ask-vincent-session-question-count";
 
@@ -56,6 +57,8 @@ export function AskVincentPanel() {
 
   const remainingQuestions = Math.max(0, MAX_SESSION_QUESTIONS - questionCount);
   const limitReached = remainingQuestions === 0;
+  const questionLength = question.length;
+  const questionCharactersLeft = Math.max(0, MAX_QUESTION_LENGTH - questionLength);
 
   function incrementQuestionCount() {
     setQuestionCount((current) => {
@@ -306,6 +309,7 @@ export function AskVincentPanel() {
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               rows={4}
+              maxLength={MAX_QUESTION_LENGTH}
               disabled={loading || limitReached}
               placeholder="Ask something like: Is Vincent a good fit for an AI product engineering role?"
             />
@@ -313,11 +317,17 @@ export function AskVincentPanel() {
               <button className="primary-button" disabled={loading || limitReached}>
                 {loading ? "Thinking..." : "Ask"}
               </button>
-              <span className="muted">
-                {limitReached
-                  ? "This session has used all 5 questions."
-                  : `${remainingQuestions} of ${MAX_SESSION_QUESTIONS} questions left in this session.`}
-              </span>
+              <div className="ask-composer-meta">
+                <span className="muted">
+                  {limitReached
+                    ? "This session has used all 5 questions."
+                    : `${remainingQuestions} of ${MAX_SESSION_QUESTIONS} questions left in this session.`}
+                </span>
+                <span className="muted">
+                  {questionLength} / {MAX_QUESTION_LENGTH} characters
+                  {questionCharactersLeft === 0 ? " (limit reached)" : `, ${questionCharactersLeft} left`}
+                </span>
+              </div>
             </div>
           </form>
         </section>

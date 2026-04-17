@@ -451,6 +451,12 @@ input[type="file"] {
   background: linear-gradient(180deg, rgba(255, 252, 246, 0), rgba(255, 252, 246, 0.98) 18%);
 }
 
+.ask-composer-meta {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
 .ask-empty p,
 .ask-message-bubble p {
   margin: 0;
@@ -1498,6 +1504,10 @@ textarea {
   .ask-skill-grid,
   .education-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ask-composer-meta {
+    justify-items: start;
   }
 
   .ask-widget {

@@ -28,6 +28,30 @@ const OVERVIEW_SECTIONS: OverviewSection[] = [
   { id: "projects", title: "Projects" },
 ];
 
+const MAX_PROFILE_FULL_NAME_LENGTH = 120;
+const MAX_PROFILE_HEADLINE_LENGTH = 200;
+const MAX_PROFILE_LOCATION_LENGTH = 120;
+const MAX_LINK_LABEL_LENGTH = 80;
+const MAX_LINK_URL_LENGTH = 2048;
+const MAX_EXPERIENCE_COMPANY_LENGTH = 120;
+const MAX_EXPERIENCE_ROLE_LENGTH = 120;
+const MAX_EXPERIENCE_PERIOD_LENGTH = 120;
+const MAX_EXPERIENCE_SUMMARY_LENGTH = 1500;
+const MAX_EDUCATION_PERIOD_LENGTH = 120;
+const MAX_EDUCATION_SCHOOL_LENGTH = 200;
+const MAX_EDUCATION_DEPARTMENT_LENGTH = 200;
+const MAX_EDUCATION_LAB_LENGTH = 200;
+const MAX_EDUCATION_THESIS_LENGTH = 500;
+const MAX_PUBLICATION_TITLE_LENGTH = 500;
+const MAX_PUBLICATION_AUTHORS_LENGTH = 800;
+const MAX_PUBLICATION_VENUE_LENGTH = 300;
+const MAX_PUBLICATION_AWARD_LENGTH = 500;
+const MAX_PUBLICATION_BLOG_SLUG_LENGTH = 200;
+const MAX_PROJECT_TITLE_LENGTH = 500;
+const MAX_PROJECT_SUMMARY_LENGTH = 1500;
+const MAX_PROJECT_PERIOD_LENGTH = 120;
+const MAX_PROJECT_BLOG_SLUG_LENGTH = 200;
+
 function normalizeOverviewSectionOrder(order: string[] | undefined): OverviewSectionId[] {
   const unique = new Set<OverviewSectionId>();
   for (const item of order ?? []) {
@@ -238,6 +262,7 @@ export function AboutPage({
                     <input
                       value={draft.publications[index].venue}
                       onChange={(e) => updatePublication(index, { venue: e.target.value })}
+                      maxLength={MAX_PUBLICATION_VENUE_LENGTH}
                       placeholder="Venue"
                     />
                     <input
@@ -249,22 +274,26 @@ export function AboutPage({
                   <input
                     value={draft.publications[index].title}
                     onChange={(e) => updatePublication(index, { title: e.target.value })}
+                    maxLength={MAX_PUBLICATION_TITLE_LENGTH}
                     placeholder="Title"
                   />
                   <input
                     value={draft.publications[index].authors}
                     onChange={(e) => updatePublication(index, { authors: e.target.value })}
+                    maxLength={MAX_PUBLICATION_AUTHORS_LENGTH}
                     placeholder="Authors"
                   />
                   <input
                     value={draft.publications[index].award}
                     onChange={(e) => updatePublication(index, { award: e.target.value })}
+                    maxLength={MAX_PUBLICATION_AWARD_LENGTH}
                     placeholder="Award / Honor"
                   />
                   <div className="inline-form">
                     <input
                       value={draft.publications[index].blog_slug ?? ""}
                       onChange={(e) => updatePublication(index, { blog_slug: e.target.value || null })}
+                      maxLength={MAX_PUBLICATION_BLOG_SLUG_LENGTH}
                       placeholder="Linked blog slug"
                     />
                     <input
@@ -306,11 +335,13 @@ export function AboutPage({
                   <input
                     value={draft.projects[index].title}
                     onChange={(e) => updateProject(index, { title: e.target.value })}
+                    maxLength={MAX_PROJECT_TITLE_LENGTH}
                     placeholder="Project title"
                   />
                   <input
                     value={draft.projects[index].period}
                     onChange={(e) => updateProject(index, { period: e.target.value })}
+                    maxLength={MAX_PROJECT_PERIOD_LENGTH}
                     placeholder="Period"
                   />
                 </div>
@@ -319,12 +350,14 @@ export function AboutPage({
                   rows={5}
                   value={draft.projects[index].summary}
                   onChange={(e) => updateProject(index, { summary: e.target.value })}
+                  maxLength={MAX_PROJECT_SUMMARY_LENGTH}
                   placeholder="Project summary (Markdown supported)"
                 />
                 <div className="inline-form">
                   <input
                     value={draft.projects[index].blog_slug ?? ""}
                     onChange={(e) => updateProject(index, { blog_slug: e.target.value || null })}
+                    maxLength={MAX_PROJECT_BLOG_SLUG_LENGTH}
                     placeholder="Linked blog slug"
                   />
                   <input
@@ -568,7 +601,12 @@ export function AboutPage({
                     Remove avatar
                   </button>
                 ) : null}
-                <input value={draft.location} onChange={(e) => updateField("location", e.target.value)} placeholder="Location" />
+                <input
+                  value={draft.location}
+                  onChange={(e) => updateField("location", e.target.value)}
+                  placeholder="Location"
+                  maxLength={MAX_PROFILE_LOCATION_LENGTH}
+                />
                 <input value={draft.email} onChange={(e) => updateField("email", e.target.value)} placeholder="Email" />
               </div>
             ) : (
@@ -583,8 +621,18 @@ export function AboutPage({
           <p className="eyebrow">AI-empowered Engineer</p>
           {editable ? (
             <div className="stack inline-edit-stack">
-              <input value={draft.full_name} onChange={(e) => updateField("full_name", e.target.value)} placeholder="Full name" />
-              <input value={draft.headline} onChange={(e) => updateField("headline", e.target.value)} placeholder="Headline" />
+              <input
+                value={draft.full_name}
+                onChange={(e) => updateField("full_name", e.target.value)}
+                placeholder="Full name"
+                maxLength={MAX_PROFILE_FULL_NAME_LENGTH}
+              />
+              <input
+                value={draft.headline}
+                onChange={(e) => updateField("headline", e.target.value)}
+                placeholder="Headline"
+                maxLength={MAX_PROFILE_HEADLINE_LENGTH}
+              />
               <textarea
                 className="inline-edit-textarea"
                 rows={8}
@@ -595,8 +643,18 @@ export function AboutPage({
               <div className="link-row inline-edit-links">
                 {draft.links.map((link, index) => (
                   <div key={`${link.url}-${index}`} className="inline-form inline-chip-editor">
-                    <input value={link.label} onChange={(e) => updateLink(index, { label: e.target.value })} placeholder="Label" />
-                    <input value={link.url} onChange={(e) => updateLink(index, { url: e.target.value })} placeholder="URL" />
+                    <input
+                      value={link.label}
+                      onChange={(e) => updateLink(index, { label: e.target.value })}
+                      placeholder="Label"
+                      maxLength={MAX_LINK_LABEL_LENGTH}
+                    />
+                    <input
+                      value={link.url}
+                      onChange={(e) => updateLink(index, { url: e.target.value })}
+                      placeholder="URL"
+                      maxLength={MAX_LINK_URL_LENGTH}
+                    />
                   </div>
                 ))}
                 <button
@@ -669,11 +727,13 @@ export function AboutPage({
                     <input
                       value={draft.education[index].period}
                       onChange={(e) => updateEducation(index, { period: e.target.value })}
+                      maxLength={MAX_EDUCATION_PERIOD_LENGTH}
                       placeholder="年月，例如 2022.09 - 2024.06"
                     />
                     <input
                       value={draft.education[index].school}
                       onChange={(e) => updateEducation(index, { school: e.target.value })}
+                      maxLength={MAX_EDUCATION_SCHOOL_LENGTH}
                       placeholder="學校名稱"
                     />
                   </div>
@@ -705,11 +765,13 @@ export function AboutPage({
                   <input
                     value={draft.education[index].lab_name}
                     onChange={(e) => updateEducation(index, { lab_name: e.target.value })}
+                    maxLength={MAX_EDUCATION_LAB_LENGTH}
                     placeholder="實驗室名稱"
                   />
                   <input
                     value={draft.education[index].department_name}
                     onChange={(e) => updateEducation(index, { department_name: e.target.value })}
+                    maxLength={MAX_EDUCATION_DEPARTMENT_LENGTH}
                     placeholder="科系名稱"
                   />
                   <textarea
@@ -717,6 +779,7 @@ export function AboutPage({
                     rows={4}
                     value={draft.education[index].thesis_title}
                     onChange={(e) => updateEducation(index, { thesis_title: e.target.value })}
+                    maxLength={MAX_EDUCATION_THESIS_LENGTH}
                     placeholder="畢業專題 / 論文"
                   />
                 </div>
@@ -861,11 +924,13 @@ export function AboutPage({
                       <input
                         value={draft.experiences[index].role}
                         onChange={(e) => updateExperience(index, { role: e.target.value })}
+                        maxLength={MAX_EXPERIENCE_ROLE_LENGTH}
                         placeholder="Role"
                       />
                       <input
                         value={draft.experiences[index].company}
                         onChange={(e) => updateExperience(index, { company: e.target.value })}
+                        maxLength={MAX_EXPERIENCE_COMPANY_LENGTH}
                         placeholder="Company"
                       />
                     </div>
@@ -873,11 +938,13 @@ export function AboutPage({
                       <input
                         value={draft.experiences[index].period}
                         onChange={(e) => updateExperience(index, { period: e.target.value })}
+                        maxLength={MAX_EXPERIENCE_PERIOD_LENGTH}
                         placeholder="Period"
                       />
                       <input
                         value={draft.experiences[index].story_slug ?? ""}
                         onChange={(e) => updateExperience(index, { story_slug: e.target.value || null })}
+                        maxLength={MAX_PROJECT_BLOG_SLUG_LENGTH}
                         placeholder="Linked blog slug"
                       />
                     </div>
@@ -932,6 +999,7 @@ export function AboutPage({
                       rows={5}
                       value={draft.experiences[index].summary}
                       onChange={(e) => updateExperience(index, { summary: e.target.value })}
+                      maxLength={MAX_EXPERIENCE_SUMMARY_LENGTH}
                       placeholder="Summary (Markdown supported)"
                     />
                   </div>

@@ -4,6 +4,10 @@ import { Seo } from "../components/Seo";
 import { api } from "../lib/api";
 import type { PromptTemplate, PromptTemplateInput } from "../lib/types";
 
+const MAX_PROMPT_TITLE_LENGTH = 120;
+const MAX_PROMPT_DESCRIPTION_LENGTH = 2000;
+const MAX_PROMPT_CONTENT_LENGTH = 12000;
+
 type AdminPromptsPageProps = {
   token: string;
 };
@@ -169,7 +173,14 @@ export function AdminPromptsPage({ token }: AdminPromptsPageProps) {
             <form className="stack" onSubmit={handleSubmit}>
               <label className="stack">
                 <span className="assistant-turn-label">Title</span>
-                <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} />
+                <input
+                  value={draft.title}
+                  onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+                  maxLength={MAX_PROMPT_TITLE_LENGTH}
+                />
+                <span className="muted">
+                  {draft.title.length} / {MAX_PROMPT_TITLE_LENGTH} characters
+                </span>
               </label>
 
               <label className="stack">
@@ -178,7 +189,11 @@ export function AdminPromptsPage({ token }: AdminPromptsPageProps) {
                   rows={3}
                   value={draft.description}
                   onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
+                  maxLength={MAX_PROMPT_DESCRIPTION_LENGTH}
                 />
+                <span className="muted">
+                  {draft.description.length} / {MAX_PROMPT_DESCRIPTION_LENGTH} characters
+                </span>
               </label>
 
               <label className="stack">
@@ -187,7 +202,11 @@ export function AdminPromptsPage({ token }: AdminPromptsPageProps) {
                   rows={16}
                   value={draft.content}
                   onChange={(event) => setDraft((current) => ({ ...current, content: event.target.value }))}
+                  maxLength={MAX_PROMPT_CONTENT_LENGTH}
                 />
+                <span className="muted">
+                  {draft.content.length} / {MAX_PROMPT_CONTENT_LENGTH} characters
+                </span>
               </label>
 
               <label className="checkbox">

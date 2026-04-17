@@ -2,6 +2,9 @@ import { FormEvent, useState } from "react";
 import { Seo } from "../components/Seo";
 import type { GuestbookEntry } from "../lib/types";
 
+const MAX_GUESTBOOK_NAME_LENGTH = 120;
+const MAX_GUESTBOOK_MESSAGE_LENGTH = 1000;
+
 type GuestbookPageProps = {
   entries: GuestbookEntry[];
   isAdmin: boolean;
@@ -75,14 +78,27 @@ export function GuestbookPage({ entries, isAdmin, onSubmit, onSaveEntry, onDelet
           <span>Leave a message</span>
         </div>
         <form className="stack" onSubmit={handleSubmit}>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" required />
+          <input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Your name"
+            required
+            maxLength={MAX_GUESTBOOK_NAME_LENGTH}
+          />
+          <span className="muted">
+            {name.length} / {MAX_GUESTBOOK_NAME_LENGTH} characters
+          </span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             placeholder="Say hello"
             rows={6}
             required
+            maxLength={MAX_GUESTBOOK_MESSAGE_LENGTH}
           />
+          <span className="muted">
+            {message.length} / {MAX_GUESTBOOK_MESSAGE_LENGTH} characters
+          </span>
           <button className="primary-button" disabled={submitting}>
             {submitting ? "Sending..." : "Submit"}
           </button>
@@ -101,12 +117,23 @@ export function GuestbookPage({ entries, isAdmin, onSubmit, onSaveEntry, onDelet
                 <strong>Editing entry</strong>
                 <span>{new Date(entry.created_at).toLocaleDateString()}</span>
               </div>
-              <input value={draft.name} onChange={(event) => updateDraft(entry.id, { name: event.target.value })} />
+              <input
+                value={draft.name}
+                onChange={(event) => updateDraft(entry.id, { name: event.target.value })}
+                maxLength={MAX_GUESTBOOK_NAME_LENGTH}
+              />
+              <span className="muted">
+                {draft.name.length} / {MAX_GUESTBOOK_NAME_LENGTH} characters
+              </span>
               <textarea
                 value={draft.message}
                 onChange={(event) => updateDraft(entry.id, { message: event.target.value })}
                 rows={6}
+                maxLength={MAX_GUESTBOOK_MESSAGE_LENGTH}
               />
+              <span className="muted">
+                {draft.message.length} / {MAX_GUESTBOOK_MESSAGE_LENGTH} characters
+              </span>
               <label className="checkbox">
                 <input
                   type="checkbox"

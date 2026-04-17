@@ -9,6 +9,12 @@ import type {
   PromptTestTemplateInput,
 } from "../lib/types";
 
+const MAX_PROMPT_TITLE_LENGTH = 120;
+const MAX_PROMPT_DESCRIPTION_LENGTH = 2000;
+const MAX_PROMPT_CONTENT_LENGTH = 12000;
+const MAX_PROMPT_RUNNER_QUESTION_LENGTH = 2000;
+const MAX_PROMPT_RUNNER_HISTORY_LENGTH = 4000;
+
 type AdminPromptRunnerPageProps = {
   token: string;
 };
@@ -314,7 +320,14 @@ export function AdminPromptRunnerPage({ token }: AdminPromptRunnerPageProps) {
               <div className="stack">
                 <label className="stack">
                   <span className="assistant-turn-label">Title</span>
-                  <input value={activeDraft.title} onChange={(event) => updateActiveDraft("title", event.target.value)} />
+                  <input
+                    value={activeDraft.title}
+                    onChange={(event) => updateActiveDraft("title", event.target.value)}
+                    maxLength={MAX_PROMPT_TITLE_LENGTH}
+                  />
+                  <span className="muted">
+                    {activeDraft.title.length} / {MAX_PROMPT_TITLE_LENGTH} characters
+                  </span>
                 </label>
 
                 <label className="stack">
@@ -323,7 +336,11 @@ export function AdminPromptRunnerPage({ token }: AdminPromptRunnerPageProps) {
                     rows={3}
                     value={activeDraft.description}
                     onChange={(event) => updateActiveDraft("description", event.target.value)}
+                    maxLength={MAX_PROMPT_DESCRIPTION_LENGTH}
                   />
+                  <span className="muted">
+                    {activeDraft.description.length} / {MAX_PROMPT_DESCRIPTION_LENGTH} characters
+                  </span>
                 </label>
 
                 <label className="stack">
@@ -332,7 +349,11 @@ export function AdminPromptRunnerPage({ token }: AdminPromptRunnerPageProps) {
                     rows={14}
                     value={activeDraft.content}
                     onChange={(event) => updateActiveDraft("content", event.target.value)}
+                    maxLength={MAX_PROMPT_CONTENT_LENGTH}
                   />
+                  <span className="muted">
+                    {activeDraft.content.length} / {MAX_PROMPT_CONTENT_LENGTH} characters
+                  </span>
                 </label>
 
                 <label className="checkbox">
@@ -360,7 +381,15 @@ export function AdminPromptRunnerPage({ token }: AdminPromptRunnerPageProps) {
 
               <label className="stack">
                 <span className="assistant-turn-label">Question</span>
-                <textarea rows={4} value={question} onChange={(event) => setQuestion(event.target.value)} />
+                <textarea
+                  rows={4}
+                  value={question}
+                  onChange={(event) => setQuestion(event.target.value)}
+                  maxLength={MAX_PROMPT_RUNNER_QUESTION_LENGTH}
+                />
+                <span className="muted">
+                  {question.length} / {MAX_PROMPT_RUNNER_QUESTION_LENGTH} characters
+                </span>
               </label>
 
               <div className="assistant-detail-metrics">
@@ -409,7 +438,15 @@ export function AdminPromptRunnerPage({ token }: AdminPromptRunnerPageProps) {
                       </div>
                       <label className="stack">
                         <span className="assistant-turn-label">Text</span>
-                        <textarea rows={3} value={row.text} onChange={(event) => updateHistoryText(row.id, event.target.value)} />
+                        <textarea
+                          rows={3}
+                          value={row.text}
+                          onChange={(event) => updateHistoryText(row.id, event.target.value)}
+                          maxLength={MAX_PROMPT_RUNNER_HISTORY_LENGTH}
+                        />
+                        <span className="muted">
+                          {row.text.length} / {MAX_PROMPT_RUNNER_HISTORY_LENGTH} characters
+                        </span>
                       </label>
                     </article>
                   ))}

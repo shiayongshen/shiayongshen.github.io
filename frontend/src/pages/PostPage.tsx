@@ -5,6 +5,9 @@ import { Seo } from "../components/Seo";
 import { api } from "../lib/api";
 import type { BlogComment, BlogPost, BlogPostInput } from "../lib/types";
 
+const MAX_COMMENT_NAME_LENGTH = 120;
+const MAX_COMMENT_MESSAGE_LENGTH = 1000;
+
 type PostPageProps = {
   post: BlogPost | null;
   isAdmin: boolean;
@@ -218,14 +221,27 @@ export function PostPage({ post, isAdmin, onEdit, onSavePost, onDeletePost, onUp
           </div>
         </div>
         <form className="stack" onSubmit={handleCommentSubmit}>
-          <input value={commentName} onChange={(event) => setCommentName(event.target.value)} placeholder="Your name" required />
+          <input
+            value={commentName}
+            onChange={(event) => setCommentName(event.target.value)}
+            placeholder="Your name"
+            required
+            maxLength={MAX_COMMENT_NAME_LENGTH}
+          />
+          <span className="muted">
+            {commentName.length} / {MAX_COMMENT_NAME_LENGTH} characters
+          </span>
           <textarea
             value={commentMessage}
             onChange={(event) => setCommentMessage(event.target.value)}
             placeholder="Share your thoughts"
             rows={5}
             required
+            maxLength={MAX_COMMENT_MESSAGE_LENGTH}
           />
+          <span className="muted">
+            {commentMessage.length} / {MAX_COMMENT_MESSAGE_LENGTH} characters
+          </span>
           <div className="action-row">
             <button className="primary-button" disabled={isSubmittingComment}>
               {isSubmittingComment ? "Sending..." : "Post Comment"}
@@ -286,12 +302,23 @@ function CommentCard({
           <strong>Editing comment</strong>
           <span>{new Date(comment.created_at).toLocaleDateString()}</span>
         </div>
-        <input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} />
+        <input
+          value={draft.name}
+          onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+          maxLength={MAX_COMMENT_NAME_LENGTH}
+        />
+        <span className="muted">
+          {draft.name.length} / {MAX_COMMENT_NAME_LENGTH} characters
+        </span>
         <textarea
           value={draft.message}
           onChange={(event) => setDraft((current) => ({ ...current, message: event.target.value }))}
           rows={5}
+          maxLength={MAX_COMMENT_MESSAGE_LENGTH}
         />
+        <span className="muted">
+          {draft.message.length} / {MAX_COMMENT_MESSAGE_LENGTH} characters
+        </span>
         <label className="checkbox">
           <input
             type="checkbox"

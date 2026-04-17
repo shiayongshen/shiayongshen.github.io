@@ -48,7 +48,7 @@ export function Layout({ isAdmin, onLogout }: LayoutProps) {
         </div>
       </main>
 
-      {!isAdmin ? <AskVincentPanel /> : null}
+      <AskVincentPanel />
     </div>
   );
 }

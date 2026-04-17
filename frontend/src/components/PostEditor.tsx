@@ -2,6 +2,11 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { BlogPost, BlogPostInput } from "../lib/types";
 
+const MAX_POST_TITLE_LENGTH = 200;
+const MAX_POST_SLUG_LENGTH = 200;
+const MAX_POST_SUMMARY_LENGTH = 280;
+const MAX_POST_CATEGORY_LENGTH = 80;
+
 type DraftPost = BlogPostInput;
 
 type PostEditorProps = {
@@ -161,20 +166,44 @@ export function PostEditor({
               Clear Draft
             </button>
           </div>
-          <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title" />
-          <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="slug-like-this" />
+          <input
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            placeholder="Title"
+            maxLength={MAX_POST_TITLE_LENGTH}
+          />
+          <span className="muted">
+            {form.title.length} / {MAX_POST_TITLE_LENGTH} characters
+          </span>
+          <input
+            value={form.slug}
+            onChange={(e) => setForm({ ...form, slug: e.target.value })}
+            placeholder="slug-like-this"
+            maxLength={MAX_POST_SLUG_LENGTH}
+          />
+          <span className="muted">
+            {form.slug.length} / {MAX_POST_SLUG_LENGTH} characters
+          </span>
           <textarea
             rows={3}
             value={form.summary}
             onChange={(e) => setForm({ ...form, summary: e.target.value })}
             placeholder="Summary"
+            maxLength={MAX_POST_SUMMARY_LENGTH}
           />
+          <span className="muted">
+            {form.summary.length} / {MAX_POST_SUMMARY_LENGTH} characters
+          </span>
           <div className="inline-form">
             <input
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
               placeholder="Category"
+              maxLength={MAX_POST_CATEGORY_LENGTH}
             />
+            <span className="muted">
+              {form.category.length} / {MAX_POST_CATEGORY_LENGTH} characters
+            </span>
             <input
               value={form.cover_image_url}
               onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })}
