@@ -244,7 +244,7 @@ class PromptTestTemplateInput(BaseModel):
 
 
 class PromptTestRunnerRequest(BaseModel):
-    question: str = Field(min_length=1, max_length=2000)
+    question: str = Field(min_length=1, max_length=20000)
     history: list[AssistantConversationTurn] = Field(default_factory=list, max_length=12)
     prompts: list[PromptTestTemplateInput] = Field(default_factory=list, max_length=8)
     limit: int = Field(default=4, ge=1, le=8)

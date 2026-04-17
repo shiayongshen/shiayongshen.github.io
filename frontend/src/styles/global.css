@@ -410,8 +410,9 @@ input[type="file"] {
 .ask-popover {
   display: flex;
   flex-direction: column;
-  width: min(440px, calc(100vw - 24px));
-  max-height: min(78vh, 760px);
+  width: min(560px, calc(100vw - 24px));
+  height: min(78dvh, 760px);
+  max-height: min(78dvh, 760px);
   overflow: hidden;
   margin-bottom: 14px;
   border-radius: 26px;
@@ -1545,9 +1546,9 @@ textarea {
   }
 
   .ask-popover {
-    width: min(100vw - 12px, 440px);
-    max-height: min(74vh, 680px);
-    min-height: min(74vh, 680px);
+    width: min(100vw - 12px, 560px);
+    height: min(82dvh, calc(100dvh - 88px));
+    max-height: min(82dvh, calc(100dvh - 88px));
     margin-bottom: 10px;
   }
 
@@ -1653,8 +1654,9 @@ textarea {
   }
 
   .ask-widget {
-    right: 10px;
-    bottom: 10px;
+    right: 8px;
+    left: 8px;
+    bottom: 8px;
   }
 
   .ask-fab {
@@ -1663,9 +1665,9 @@ textarea {
   }
 
   .ask-popover {
-    width: min(100vw - 16px, 440px);
-    max-height: min(72vh, 640px);
-    min-height: min(72vh, 640px);
+    width: 100%;
+    height: min(82dvh, calc(100dvh - 88px));
+    max-height: min(82dvh, calc(100dvh - 88px));
   }
 
   .modal-backdrop {
