@@ -3,9 +3,18 @@ import { Seo } from "../components/Seo";
 type AdminDashboardProps = {
   onEditProfile: () => void;
   onCreatePost: () => void;
+  onOpenAssistantLogs: () => void;
+  onOpenPrompts: () => void;
+  onOpenPromptRunner: () => void;
 };
 
-export function AdminDashboard({ onEditProfile, onCreatePost }: AdminDashboardProps) {
+export function AdminDashboard({
+  onEditProfile,
+  onCreatePost,
+  onOpenAssistantLogs,
+  onOpenPrompts,
+  onOpenPromptRunner,
+}: AdminDashboardProps) {
   return (
     <section className="grid-two">
       <Seo
@@ -26,6 +35,27 @@ export function AdminDashboard({ onEditProfile, onCreatePost }: AdminDashboardPr
         <h2>Create or update markdown posts</h2>
         <button className="primary-button" onClick={onCreatePost}>
           Write New Post
+        </button>
+      </article>
+      <article className="panel">
+        <p className="eyebrow">Assistant</p>
+        <h2>Review chatbot sessions and turn logs</h2>
+        <button className="primary-button" onClick={onOpenAssistantLogs}>
+          Open Chat Logs
+        </button>
+      </article>
+      <article className="panel">
+        <p className="eyebrow">Prompts</p>
+        <h2>Edit system prompts and routing instructions</h2>
+        <button className="primary-button" onClick={onOpenPrompts}>
+          Open Prompt Manager
+        </button>
+      </article>
+      <article className="panel">
+        <p className="eyebrow">Runner</p>
+        <h2>Test prompt drafts against live questions</h2>
+        <button className="primary-button" onClick={onOpenPromptRunner}>
+          Open Prompt Runner
         </button>
       </article>
     </section>

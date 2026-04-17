@@ -11,7 +11,7 @@ from urllib import error, request
 from sqlalchemy.orm import Session
 
 from .config import settings
-from .models import BlogPost, KnowledgeItem, Profile, SkillCard
+from .models import BlogPost, KnowledgeItem, Profile, PromptTemplate, SkillCard
 from .schemas import AssistantConversationTurn
 
 
@@ -39,6 +39,114 @@ class RankedSkillCard:
     questions: list[str]
     evidence: list[str]
     score: float
+
+
+@dataclass
+class AssistantGenerationMetrics:
+    model_name: str
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    total_tokens: int | None = None
+    usage_source: str = "estimated"
+
+    def as_dict(self) -> dict[str, int | str | None]:
+        return {
+            "model_name": self.model_name,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "total_tokens": self.total_tokens,
+            "usage_source": self.usage_source,
+        }
+
+
+@dataclass
+class AssistantPromptPack:
+    answer_system_prompt: str
+    selection_system_prompt: str
+    source_visibility_prompt: str
+    prompt_versions: dict[str, int]
+
+
+DEFAULT_PROMPTS: dict[str, dict[str, str]] = {
+    "answer_system_prompt": {
+        "title": "Answer Prompt",
+        "description": "Main system prompt that guides the assistant's answer style and safety.",
+        "content": (
+            "You are a site assistant for Vincent Hsia. "
+            "Use conversation history only to resolve context like pronouns, follow-up references, or topic continuity. "
+            "Answer using only the provided site knowledge. "
+            "Reply only in Traditional Chinese or English. "
+            "If the user writes in Chinese, reply in Traditional Chinese only, never Simplified Chinese. "
+            "If the user writes in English, reply in English. "
+            "Do not mix Simplified Chinese into the reply. "
+            "Keep replies short by default: 1 short paragraph or 2-4 bullets. "
+            "Decide the response style from the user's message yourself. "
+            "If the user is only greeting you, thanking you, or making a vague social opener, reply in one short sentence and invite a more specific question. "
+            "If the user asks what you can do, reply briefly with examples of what they can ask. "
+            "Use longer answers only when the question is actually substantive. "
+            "If the current message depends on earlier turns, acknowledge the reference naturally. "
+            "Do not invent details."
+        ),
+    },
+    "skill_selection_prompt": {
+        "title": "Skill Selection Prompt",
+        "description": "Prompt that ranks the most relevant knowledge cards for a user question.",
+        "content": (
+            "You select the most relevant site knowledge cards for answering a user question. "
+            "Return strict JSON only with one field: {\"source_keys\": [\"...\"]}. "
+            "Choose at most the requested limit. "
+            "Prefer precision over recall. "
+            "Use conversation history only to resolve follow-up context. "
+            "If no cards are useful, return an empty array."
+        ),
+    },
+    "source_visibility_prompt": {
+        "title": "Source Visibility Prompt",
+        "description": "Prompt that decides whether the UI should show source cards for a response.",
+        "content": (
+            "You decide whether a UI should show source cards for an assistant reply. "
+            "Return strict JSON only with one boolean field: {\"show_sources\": true|false}. "
+            "Return true only when the answer materially relies on the provided site knowledge cards. "
+            "Return false for greetings, thanks, vague social replies, generic follow-ups, or answers that do not really use the cards."
+        ),
+    },
+}
+
+
+def _default_prompt_content(prompt_key: str) -> str:
+    return DEFAULT_PROMPTS[prompt_key]["content"]
+
+
+def _default_prompt_title(prompt_key: str) -> str:
+    return DEFAULT_PROMPTS[prompt_key]["title"]
+
+
+def _default_prompt_description(prompt_key: str) -> str:
+    return DEFAULT_PROMPTS[prompt_key]["description"]
+
+
+def load_prompt_pack(db: Session, prompt_overrides: dict[str, str] | None = None) -> AssistantPromptPack:
+    prompts = {item.prompt_key: item for item in db.query(PromptTemplate).filter(PromptTemplate.enabled.is_(True)).all()}
+    overrides = prompt_overrides or {}
+    prompt_versions: dict[str, int] = {}
+
+    def resolve(prompt_key: str) -> str:
+        prompt = prompts.get(prompt_key)
+        if prompt_key in overrides:
+            prompt_versions[prompt_key] = prompt.version if prompt else 1
+            return overrides[prompt_key]
+        if prompt:
+            prompt_versions[prompt_key] = prompt.version
+            return prompt.content
+        prompt_versions[prompt_key] = 1
+        return _default_prompt_content(prompt_key)
+
+    return AssistantPromptPack(
+        answer_system_prompt=resolve("answer_system_prompt"),
+        selection_system_prompt=resolve("skill_selection_prompt"),
+        source_visibility_prompt=resolve("source_visibility_prompt"),
+        prompt_versions=prompt_versions,
+    )
 
 
 def _normalize_whitespace(value: str) -> str:
@@ -431,6 +539,7 @@ def _build_skill_card_selection_request_body(
     question: str,
     cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
+    selection_system_prompt: str,
     *,
     limit: int,
 ) -> dict[str, Any]:
@@ -452,14 +561,7 @@ def _build_skill_card_selection_request_body(
         "input": [
             {
                 "role": "system",
-                "content": (
-                    "You select the most relevant site knowledge cards for answering a user question. "
-                    "Return strict JSON only with one field: {\"source_keys\": [\"...\"]}. "
-                    "Choose at most the requested limit. "
-                    "Prefer precision over recall. "
-                    "Use conversation history only to resolve follow-up context. "
-                    "If no cards are useful, return an empty array."
-                ),
+                "content": selection_system_prompt,
             },
             {
                 "role": "user",
@@ -481,6 +583,7 @@ def select_skill_cards_with_openai(
     question: str,
     cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
+    selection_system_prompt: str,
     *,
     limit: int,
 ) -> list[RankedSkillCard] | None:
@@ -489,7 +592,7 @@ def select_skill_cards_with_openai(
     if not cards:
         return []
 
-    body = _build_skill_card_selection_request_body(question, cards, history, limit=limit)
+    body = _build_skill_card_selection_request_body(question, cards, history, selection_system_prompt, limit=limit)
     req = request.Request(
         "https://api.openai.com/v1/responses",
         data=json.dumps(body).encode("utf-8"),
@@ -527,12 +630,13 @@ def select_skill_cards(
     db: Session,
     question: str,
     history: list[AssistantConversationTurn],
+    selection_system_prompt: str,
     *,
     limit: int,
 ) -> list[RankedSkillCard]:
     all_cards = list_enabled_skill_cards(db)
     if settings.openai_api_key and settings.openai_model:
-        selected = select_skill_cards_with_openai(question, all_cards, history, limit=limit)
+        selected = select_skill_cards_with_openai(question, all_cards, history, selection_system_prompt, limit=limit)
         if selected is not None:
             return selected
 
@@ -572,6 +676,7 @@ def _build_openai_request_body(
     question: str,
     ranked_cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
+    answer_system_prompt: str,
     *,
     stream: bool,
 ) -> dict[str, Any]:
@@ -591,22 +696,7 @@ def _build_openai_request_body(
     inputs: list[dict[str, Any]] = [
         {
             "role": "system",
-            "content": (
-                "You are a site assistant for Vincent Hsia. "
-                "Use conversation history only to resolve context like pronouns, follow-up references, or topic continuity. "
-                "Answer using only the provided site knowledge. "
-                "Reply only in Traditional Chinese or English. "
-                "If the user writes in Chinese, reply in Traditional Chinese only, never Simplified Chinese. "
-                "If the user writes in English, reply in English. "
-                "Do not mix Simplified Chinese into the reply. "
-                "Keep replies short by default: 1 short paragraph or 2-4 bullets. "
-                "Decide the response style from the user's message yourself. "
-                "If the user is only greeting you, thanking you, or making a vague social opener, reply in one short sentence and invite a more specific question. "
-                "If the user asks what you can do, reply briefly with examples of what they can ask. "
-                "Use longer answers only when the question is actually substantive. "
-                "If the current message depends on earlier turns, acknowledge the reference naturally. "
-                "Do not invent details."
-            ),
+            "content": answer_system_prompt,
         }
     ]
 
@@ -630,6 +720,46 @@ def _build_openai_request_body(
     }
 
 
+def _estimate_token_count(text: str) -> int:
+    if not text:
+        return 0
+    return max(1, len(text) // 4)
+
+
+def _estimate_request_tokens(body: dict[str, Any], answer: str = "") -> AssistantGenerationMetrics:
+    serialized_body = json.dumps(body, ensure_ascii=False)
+    input_tokens = _estimate_token_count(serialized_body)
+    output_tokens = _estimate_token_count(answer)
+    total_tokens = input_tokens + output_tokens
+    return AssistantGenerationMetrics(
+        model_name=settings.openai_model or "fallback",
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        total_tokens=total_tokens,
+        usage_source="estimated",
+    )
+
+
+def _extract_usage(payload: dict[str, Any]) -> AssistantGenerationMetrics | None:
+    usage = payload.get("usage")
+    if not isinstance(usage, dict):
+        return None
+
+    input_tokens = usage.get("input_tokens")
+    output_tokens = usage.get("output_tokens")
+    total_tokens = usage.get("total_tokens")
+    if not any(isinstance(item, int) for item in (input_tokens, output_tokens, total_tokens)):
+        return None
+
+    return AssistantGenerationMetrics(
+        model_name=str(payload.get("model") or settings.openai_model or "openai"),
+        input_tokens=input_tokens if isinstance(input_tokens, int) else None,
+        output_tokens=output_tokens if isinstance(output_tokens, int) else None,
+        total_tokens=total_tokens if isinstance(total_tokens, int) else None,
+        usage_source="openai",
+    )
+
+
 def _extract_json_object(payload: dict[str, Any]) -> dict[str, Any] | None:
     text = _extract_response_text(payload)
     if not text:
@@ -646,6 +776,7 @@ def _build_source_visibility_request_body(
     answer: str,
     ranked_cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
+    source_visibility_prompt: str,
 ) -> dict[str, Any]:
     card_context = [
         {
@@ -662,12 +793,7 @@ def _build_source_visibility_request_body(
         "input": [
             {
                 "role": "system",
-                "content": (
-                    "You decide whether a UI should show source cards for an assistant reply. "
-                    "Return strict JSON only with one boolean field: {\"show_sources\": true|false}. "
-                    "Return true only when the answer materially relies on the provided site knowledge cards. "
-                    "Return false for greetings, thanks, vague social replies, generic follow-ups, or answers that do not really use the cards."
-                ),
+                "content": source_visibility_prompt,
             },
             {
                 "role": "user",
@@ -707,11 +833,12 @@ def decide_show_sources_with_openai(
     answer: str,
     ranked_cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
+    source_visibility_prompt: str,
 ) -> bool | None:
     if not settings.openai_api_key or not settings.openai_model:
         return None
 
-    body = _build_source_visibility_request_body(question, answer, ranked_cards, history)
+    body = _build_source_visibility_request_body(question, answer, ranked_cards, history, source_visibility_prompt)
     req = request.Request(
         "https://api.openai.com/v1/responses",
         data=json.dumps(body).encode("utf-8"),
@@ -739,11 +866,12 @@ def determine_show_sources(
     answer: str,
     ranked_cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
+    source_visibility_prompt: str,
 ) -> bool:
     if _should_force_hide_sources(question, answer, ranked_cards):
         return False
 
-    llm_decision = decide_show_sources_with_openai(question, answer, ranked_cards, history)
+    llm_decision = decide_show_sources_with_openai(question, answer, ranked_cards, history, source_visibility_prompt)
     if llm_decision is None:
         return bool(ranked_cards)
     if not ranked_cards:
@@ -755,11 +883,18 @@ def iter_openai_stream(
     question: str,
     ranked_cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
-) -> Iterator[str]:
+    answer_system_prompt: str,
+) -> tuple[Iterator[str], dict[str, AssistantGenerationMetrics | None]]:
     if not settings.openai_api_key or not settings.openai_model:
-        return
+        return iter(()), {"metrics": None}
 
-    body = _build_openai_request_body(question, ranked_cards, history, stream=True)
+    body = _build_openai_request_body(
+        question,
+        ranked_cards,
+        history,
+        answer_system_prompt,
+        stream=True,
+    )
     req = request.Request(
         "https://api.openai.com/v1/responses",
         data=json.dumps(body).encode("utf-8"),
@@ -771,43 +906,53 @@ def iter_openai_stream(
         method="POST",
     )
 
-    try:
-        with request.urlopen(req, timeout=60) as response:
-            data_lines: list[str] = []
-            for raw_line in response:
-                line = raw_line.decode("utf-8")
-                stripped = line.strip()
-                if not stripped:
-                    if not data_lines:
-                        continue
-                    data = "\n".join(data_lines)
-                    data_lines = []
-                    if data == "[DONE]":
-                        break
-                    try:
-                        payload = json.loads(data)
-                    except json.JSONDecodeError:
-                        continue
-                    if payload.get("type") == "response.output_text.delta":
-                        delta = payload.get("delta", "")
-                        if delta:
-                            yield delta
-                    continue
+    metrics_holder: dict[str, AssistantGenerationMetrics | None] = {"metrics": None}
 
-                if stripped.startswith("data:"):
-                    data_lines.append(stripped[5:].lstrip())
+    try:
+        def stream() -> Iterator[str]:
+            with request.urlopen(req, timeout=60) as response:
+                data_lines: list[str] = []
+                for raw_line in response:
+                    line = raw_line.decode("utf-8")
+                    stripped = line.strip()
+                    if not stripped:
+                        if not data_lines:
+                            continue
+                        data = "\n".join(data_lines)
+                        data_lines = []
+                        if data == "[DONE]":
+                            break
+                        try:
+                            payload = json.loads(data)
+                        except json.JSONDecodeError:
+                            continue
+                        if isinstance(payload, dict):
+                            extracted = _extract_usage(payload)
+                            if extracted:
+                                metrics_holder["metrics"] = extracted
+                            if payload.get("type") == "response.output_text.delta":
+                                delta = payload.get("delta", "")
+                                if delta:
+                                    yield delta
+                            continue
+
+                    if stripped.startswith("data:"):
+                        data_lines.append(stripped[5:].lstrip())
+
+        return stream(), metrics_holder
     except (error.HTTPError, error.URLError, TimeoutError):
-        return
+        return iter(()), {"metrics": None}
 
 
 def generate_answer_with_openai(
     question: str,
     ranked_cards: list[RankedSkillCard],
     history: list[AssistantConversationTurn],
-) -> str | None:
+    answer_system_prompt: str,
+) -> tuple[str | None, AssistantGenerationMetrics | None]:
     if not settings.openai_api_key or not settings.openai_model:
-        return None
-    body = _build_openai_request_body(question, ranked_cards, history, stream=False)
+        return None, None
+    body = _build_openai_request_body(question, ranked_cards, history, answer_system_prompt, stream=False)
     req = request.Request(
         "https://api.openai.com/v1/responses",
         data=json.dumps(body).encode("utf-8"),
@@ -822,9 +967,9 @@ def generate_answer_with_openai(
         with request.urlopen(req, timeout=30) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (error.HTTPError, error.URLError, TimeoutError, json.JSONDecodeError):
-        return None
+        return None, _estimate_request_tokens(body)
 
-    return _extract_response_text(payload) or None
+    return _extract_response_text(payload) or None, _extract_usage(payload) or _estimate_request_tokens(body, _extract_response_text(payload) or "")
 
 
 def generate_fallback_answer(question: str, ranked_cards: list[RankedSkillCard]) -> str:
@@ -867,13 +1012,50 @@ def answer_question(
     history: list[AssistantConversationTurn] | None = None,
     limit: int = 4,
 ) -> tuple[str, bool, list[RankedSkillCard]]:
+    answer, _metrics, show_sources, ranked_cards = answer_question_with_metrics(db, question, history=history, limit=limit)
+    return answer, show_sources, ranked_cards
+
+
+def answer_question_with_metrics(
+    db: Session,
+    question: str,
+    history: list[AssistantConversationTurn] | None = None,
+    limit: int = 4,
+) -> tuple[str, AssistantGenerationMetrics, bool, list[RankedSkillCard]]:
+    prompt_pack = load_prompt_pack(db)
+    return answer_question_with_prompt_pack(db, question, history, prompt_pack, limit=limit)
+
+
+def answer_question_with_prompt_pack(
+    db: Session,
+    question: str,
+    history: list[AssistantConversationTurn] | None,
+    prompt_pack: AssistantPromptPack,
+    *,
+    limit: int = 4,
+) -> tuple[str, AssistantGenerationMetrics, bool, list[RankedSkillCard]]:
     normalized_history = _normalize_history(history or [])
-    ranked_cards = select_skill_cards(db, question, normalized_history, limit=limit)
-    answer = generate_answer_with_openai(question, ranked_cards, normalized_history)
+    ranked_cards = select_skill_cards(
+        db,
+        question,
+        normalized_history,
+        prompt_pack.selection_system_prompt,
+        limit=limit,
+    )
+    answer, metrics = generate_answer_with_openai(question, ranked_cards, normalized_history, prompt_pack.answer_system_prompt)
     if not answer:
         answer = generate_fallback_answer(question, ranked_cards)
-    show_sources = determine_show_sources(question, answer, ranked_cards, normalized_history)
-    return answer, show_sources, ranked_cards
+    if not metrics:
+        body = _build_openai_request_body(question, ranked_cards, normalized_history, prompt_pack.answer_system_prompt, stream=False)
+        metrics = _estimate_request_tokens(body, answer)
+    show_sources = determine_show_sources(
+        question,
+        answer,
+        ranked_cards,
+        normalized_history,
+        prompt_pack.source_visibility_prompt,
+    )
+    return answer, metrics, show_sources, ranked_cards
 
 
 def stream_answer_question(
@@ -882,17 +1064,71 @@ def stream_answer_question(
     history: list[AssistantConversationTurn] | None = None,
     limit: int = 4,
 ) -> tuple[str, bool, list[RankedSkillCard], Iterator[str]]:
+    fallback_answer, show_sources, ranked_cards, answer_stream, _metrics = stream_answer_question_with_metrics(
+        db,
+        question,
+        history=history,
+        limit=limit,
+    )
+    return fallback_answer, show_sources, ranked_cards, answer_stream
+
+
+def stream_answer_question_with_metrics(
+    db: Session,
+    question: str,
+    history: list[AssistantConversationTurn] | None = None,
+    limit: int = 4,
+) -> tuple[str, bool, list[RankedSkillCard], Iterator[str], dict[str, AssistantGenerationMetrics | None]]:
     normalized_history = _normalize_history(history or [])
-    ranked_cards = select_skill_cards(db, question, normalized_history, limit=limit)
+    prompt_pack = load_prompt_pack(db)
+    return stream_answer_question_with_prompt_pack(
+        db,
+        question,
+        normalized_history,
+        prompt_pack,
+        limit=limit,
+    )
+
+
+def stream_answer_question_with_prompt_pack(
+    db: Session,
+    question: str,
+    history: list[AssistantConversationTurn] | None,
+    prompt_pack: AssistantPromptPack,
+    *,
+    limit: int = 4,
+) -> tuple[str, bool, list[RankedSkillCard], Iterator[str], dict[str, AssistantGenerationMetrics | None]]:
+    normalized_history = _normalize_history(history or [])
+    ranked_cards = select_skill_cards(db, question, normalized_history, prompt_pack.selection_system_prompt, limit=limit)
     if settings.openai_api_key and settings.openai_model:
-        return "", True, ranked_cards, iter_openai_stream(question, ranked_cards, normalized_history)
+        answer_stream, metrics_holder = iter_openai_stream(
+            question,
+            ranked_cards,
+            normalized_history,
+            prompt_pack.answer_system_prompt,
+        )
+        if metrics_holder["metrics"] is None:
+            metrics_holder["metrics"] = _estimate_request_tokens(
+                _build_openai_request_body(question, ranked_cards, normalized_history, prompt_pack.answer_system_prompt, stream=True)
+            )
+        return "", True, ranked_cards, answer_stream, metrics_holder
 
     fallback_answer = generate_fallback_answer(question, ranked_cards)
-    show_sources = determine_show_sources(question, fallback_answer, ranked_cards, normalized_history)
+    show_sources = determine_show_sources(
+        question,
+        fallback_answer,
+        ranked_cards,
+        normalized_history,
+        prompt_pack.source_visibility_prompt,
+    )
+    metrics = _estimate_request_tokens(
+        _build_openai_request_body(question, ranked_cards, normalized_history, prompt_pack.answer_system_prompt, stream=False),
+        fallback_answer,
+    )
 
     def fallback_stream() -> Iterator[str]:
         words = fallback_answer.split(" ")
         for index, word in enumerate(words):
             yield word if index == len(words) - 1 else f"{word} "
 
-    return fallback_answer, show_sources, ranked_cards, fallback_stream()
+    return fallback_answer, show_sources, ranked_cards, fallback_stream(), {"metrics": metrics}

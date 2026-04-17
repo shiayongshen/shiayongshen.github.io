@@ -3,10 +3,11 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from .assistant import DEFAULT_PROMPTS
 from .auth import hash_password
 from .config import settings
 from .content import list_posts
-from .models import AdminUser, BlogPost, GuestbookEntry, Profile
+from .models import AdminUser, BlogPost, GuestbookEntry, Profile, PromptTemplate
 
 
 def parse_iso_datetime(value: str) -> datetime:
@@ -139,6 +140,19 @@ def seed_database(db: Session) -> None:
         )
 
     seed_blog_posts(db)
+
+    for prompt_key, prompt in DEFAULT_PROMPTS.items():
+        if not db.query(PromptTemplate).filter(PromptTemplate.prompt_key == prompt_key).first():
+            db.add(
+                PromptTemplate(
+                    prompt_key=prompt_key,
+                    title=prompt["title"],
+                    description=prompt["description"],
+                    content=prompt["content"],
+                    version=1,
+                    enabled=True,
+                )
+            )
 
     if not db.query(GuestbookEntry).first():
         db.add(

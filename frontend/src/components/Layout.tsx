@@ -8,7 +8,7 @@ type LayoutProps = {
 
 export function Layout({ isAdmin, onLogout }: LayoutProps) {
   const location = useLocation();
-  const isWideEditor = location.pathname.startsWith("/admin/blog/");
+  const isWideEditor = location.pathname.startsWith("/admin/blog/") || location.pathname.startsWith("/admin/prompts");
   const routeKey = `${location.pathname}${location.search}`;
 
   return (
@@ -23,17 +23,20 @@ export function Layout({ isAdmin, onLogout }: LayoutProps) {
         </Link>
 
         <nav className="nav">
-          <NavLink to="/">About</NavLink>
-          <NavLink to="/blog">Blog</NavLink>
-          <NavLink to="/guestbook">Guestbook</NavLink>
-          {isAdmin ? (
-            <>
-              <NavLink to="/admin">Dashboard</NavLink>
-              <button className="text-button" onClick={onLogout}>
-                Logout
-              </button>
-            </>
-          ) : null}
+              <NavLink to="/">About</NavLink>
+              <NavLink to="/blog">Blog</NavLink>
+              <NavLink to="/guestbook">Guestbook</NavLink>
+              {isAdmin ? (
+                <>
+                  <NavLink to="/admin">Dashboard</NavLink>
+                  <NavLink to="/admin/assistant">Chat Logs</NavLink>
+                  <NavLink to="/admin/prompts">Prompts</NavLink>
+                  <NavLink to="/admin/prompts/test">Prompt Runner</NavLink>
+                  <button className="text-button" onClick={onLogout}>
+                    Logout
+                  </button>
+                </>
+              ) : null}
         </nav>
       </header>
 

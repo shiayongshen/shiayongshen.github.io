@@ -118,12 +118,96 @@ export type AssistantConversationTurn = {
   text: string;
 };
 
+export type AssistantConversationTurnRecord = {
+  id: number;
+  turn_index: number;
+  question: string;
+  answer: string;
+  show_sources: boolean;
+  model_name: string;
+  latency_ms: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  usage_source: string;
+  prompt_versions: Record<string, number>;
+  selected_skills: AssistantSkillCard[];
+  related_links: AssistantRelatedLink[];
+  history: AssistantConversationTurn[];
+  created_at: string;
+};
+
+export type AssistantConversationSessionSummary = {
+  id: number;
+  session_id: string;
+  title: string;
+  first_question: string;
+  last_question: string;
+  last_answer_preview: string;
+  last_model_name: string;
+  last_latency_ms: number;
+  last_input_tokens: number;
+  last_output_tokens: number;
+  last_total_tokens: number;
+  last_prompt_versions: Record<string, number>;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_tokens: number;
+  turn_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AssistantConversationSessionDetail = AssistantConversationSessionSummary & {
+  turns: AssistantConversationTurnRecord[];
+};
+
 export type GuestbookEntry = {
   id: number;
   name: string;
   message: string;
   approved: boolean;
   created_at: string;
+};
+
+export type PromptTemplate = {
+  id: number;
+  prompt_key: string;
+  title: string;
+  description: string;
+  content: string;
+  version: number;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PromptTemplateInput = {
+  title: string;
+  description: string;
+  content: string;
+  enabled: boolean;
+};
+
+export type PromptTestTemplateInput = PromptTemplateInput & {
+  prompt_key: string;
+};
+
+export type PromptTestRunnerRequest = {
+  question: string;
+  history: AssistantConversationTurn[];
+  prompts: PromptTestTemplateInput[];
+  limit: number;
+};
+
+export type PromptTestRunnerResponse = AskAssistantResponse & {
+  model_name: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  usage_source: string;
+  latency_ms: number;
+  prompt_versions: Record<string, number>;
 };
 
 export type LoginResponse = {

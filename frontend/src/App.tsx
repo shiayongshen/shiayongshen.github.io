@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { AboutPage } from "./pages/AboutPage";
+import { AdminAssistantPage } from "./pages/AdminAssistantPage";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { BlogEditorPage } from "./pages/BlogEditorPage";
 import { BlogPage } from "./pages/BlogPage";
 import { GuestbookPage } from "./pages/GuestbookPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PostPage } from "./pages/PostPage";
+import { AdminPromptRunnerPage } from "./pages/AdminPromptRunnerPage";
+import { AdminPromptsPage } from "./pages/AdminPromptsPage";
 import { api } from "./lib/api";
 import type { BlogPost, BlogPostInput, GuestbookEntry, Profile } from "./lib/types";
 
@@ -280,11 +283,26 @@ export default function App() {
                 <AdminDashboard
                   onEditProfile={() => navigate("/admin/about")}
                   onCreatePost={() => navigate("/admin/blog/new")}
+                  onOpenAssistantLogs={() => navigate("/admin/assistant")}
+                  onOpenPrompts={() => navigate("/admin/prompts")}
+                  onOpenPromptRunner={() => navigate("/admin/prompts/test")}
                 />
               ) : (
                 <Navigate to="/login" replace />
               )
             }
+          />
+          <Route
+            path="admin/assistant"
+            element={isAdmin ? <AdminAssistantPage token={token} /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="admin/prompts"
+            element={isAdmin ? <AdminPromptsPage token={token} /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="admin/prompts/test"
+            element={isAdmin ? <AdminPromptRunnerPage token={token} /> : <Navigate to="/login" replace />}
           />
           <Route
             path="admin/about"

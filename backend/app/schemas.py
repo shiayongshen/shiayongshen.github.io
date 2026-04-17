@@ -162,6 +162,7 @@ class AssistantConversationTurn(BaseModel):
 class AskAssistantRequest(BaseModel):
     question: str = Field(min_length=1, max_length=500)
     history: list[AssistantConversationTurn] = Field(default_factory=list, max_length=12)
+    session_id: str | None = Field(default=None, max_length=80)
 
 
 class AskAssistantResponse(BaseModel):
@@ -169,6 +170,94 @@ class AskAssistantResponse(BaseModel):
     show_sources: bool = True
     selected_skills: list[AssistantSkillCardRead]
     related_links: list[AssistantRelatedLink]
+
+
+class AssistantConversationTurnRead(BaseModel):
+    id: int
+    turn_index: int
+    question: str
+    answer: str
+    show_sources: bool
+    model_name: str
+    latency_ms: int
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    usage_source: str
+    prompt_versions: dict[str, int]
+    selected_skills: list[AssistantSkillCardRead]
+    related_links: list[AssistantRelatedLink]
+    history: list[AssistantConversationTurn]
+    created_at: datetime
+
+
+class AssistantConversationSessionRead(BaseModel):
+    id: int
+    session_id: str
+    title: str
+    first_question: str
+    last_question: str
+    last_answer_preview: str
+    last_model_name: str
+    last_latency_ms: int
+    last_input_tokens: int
+    last_output_tokens: int
+    last_total_tokens: int
+    last_prompt_versions: dict[str, int]
+    total_input_tokens: int
+    total_output_tokens: int
+    total_tokens: int
+    turn_count: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class AssistantConversationSessionDetail(AssistantConversationSessionRead):
+    turns: list[AssistantConversationTurnRead]
+
+
+class PromptTemplateRead(BaseModel):
+    id: int
+    prompt_key: str
+    title: str
+    description: str
+    content: str
+    version: int
+    enabled: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class PromptTemplateUpdate(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+    description: str = Field(default="", max_length=2000)
+    content: str = Field(min_length=1, max_length=12000)
+    enabled: bool = True
+
+
+class PromptTestTemplateInput(BaseModel):
+    prompt_key: str = Field(min_length=1, max_length=80)
+    title: str = Field(min_length=1, max_length=120)
+    description: str = Field(default="", max_length=2000)
+    content: str = Field(min_length=1, max_length=12000)
+    enabled: bool = True
+
+
+class PromptTestRunnerRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+    history: list[AssistantConversationTurn] = Field(default_factory=list, max_length=12)
+    prompts: list[PromptTestTemplateInput] = Field(default_factory=list, max_length=8)
+    limit: int = Field(default=4, ge=1, le=8)
+
+
+class PromptTestRunnerResponse(AskAssistantResponse):
+    model_name: str
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    usage_source: str
+    latency_ms: int
+    prompt_versions: dict[str, int]
 
 
 class GuestbookCreate(BaseModel):

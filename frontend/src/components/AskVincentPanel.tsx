@@ -21,6 +21,7 @@ type ChatMessage = {
 
 const MAX_HISTORY_TURNS = 8;
 const MAX_SESSION_QUESTIONS = 5;
+const SESSION_ID_KEY = "ask-vincent-session-id";
 const SESSION_STORAGE_KEY = "ask-vincent-session-question-count";
 
 export function AskVincentPanel() {
@@ -30,6 +31,7 @@ export function AskVincentPanel() {
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [questionCount, setQuestionCount] = useState(0);
+  const [sessionId, setSessionId] = useState("");
   const threadEndRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ block: "end" });
@@ -38,6 +40,14 @@ export function AskVincentPanel() {
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
+    }
+    const storedSessionId = window.sessionStorage.getItem(SESSION_ID_KEY);
+    if (storedSessionId) {
+      setSessionId(storedSessionId);
+    } else {
+      const nextSessionId = `ask-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      window.sessionStorage.setItem(SESSION_ID_KEY, nextSessionId);
+      setSessionId(nextSessionId);
     }
     const storedCount = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
     const parsedCount = storedCount ? Number.parseInt(storedCount, 10) : 0;
@@ -80,6 +90,16 @@ export function AskVincentPanel() {
       setOpen(true);
       return;
     }
+    const activeSessionId =
+      sessionId ||
+      (() => {
+        const nextSessionId = `ask-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(SESSION_ID_KEY, nextSessionId);
+        }
+        setSessionId(nextSessionId);
+        return nextSessionId;
+      })();
     const history = buildHistory();
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -102,7 +122,7 @@ export function AskVincentPanel() {
       },
     ]);
     try {
-      const response = await api.askAssistantStream(trimmed, history);
+      const response = await api.askAssistantStream(trimmed, history, activeSessionId);
       if (!response.ok || !response.body) {
         throw new Error("Could not stream an answer right now.");
       }
