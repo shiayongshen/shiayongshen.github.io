@@ -18,6 +18,10 @@
     linear-gradient(180deg, #f8f2e8 0%, #f4efe6 100%);
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -25,11 +29,20 @@
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
 }
 
 button,
@@ -49,13 +62,13 @@ input[type="file"] {
 }
 
 .shell {
-  width: min(1320px, calc(100vw - 32px));
+  width: min(1320px, calc(100% - 32px));
   margin: 0 auto;
   padding: 24px 0 64px;
 }
 
 .shell-wide {
-  width: min(1800px, calc(100vw - 24px));
+  width: min(1800px, calc(100% - 24px));
 }
 
 .topbar {
@@ -95,6 +108,7 @@ input[type="file"] {
   align-items: center;
   gap: 18px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .nav a.active {
@@ -110,6 +124,21 @@ input[type="file"] {
 .stack {
   display: grid;
   gap: 20px;
+}
+
+.page,
+.stack,
+.hero > *,
+.grid-two > *,
+.editor-split > *,
+.admin-assistant-layout > *,
+.admin-prompts-layout > *,
+.admin-runner-layout > *,
+.hero-copy,
+.hero-card,
+.panel,
+.nested-panel {
+  min-width: 0;
 }
 
 .home-intro-active {
@@ -525,7 +554,7 @@ input[type="file"] {
 }
 
 .ask-skill-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .ask-skill-card {
@@ -551,7 +580,7 @@ input[type="file"] {
 }
 
 .education-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .education-card {
@@ -643,7 +672,7 @@ input[type="file"] {
 
 .admin-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
 }
 
@@ -861,7 +890,7 @@ input[type="file"] {
 
 .assistant-card-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
@@ -927,7 +956,7 @@ input[type="file"] {
 
 .latest-posts-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 18px;
 }
 
@@ -956,7 +985,7 @@ input[type="file"] {
 
 .overview-editor-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 20px;
   align-items: start;
 }
@@ -1489,7 +1518,7 @@ textarea {
   }
 
   .shell {
-    width: min(100vw - 20px, 1120px);
+    width: min(100%, 1120px);
   }
 
   .experience-grid {
@@ -1545,6 +1574,110 @@ textarea {
   .admin-runner-layout,
   .assistant-card-grid,
   .assistant-filter-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1080px) {
+  .hero,
+  .grid-two {
+    flex-direction: column;
+  }
+
+  .hero-card,
+  .hero-photo-card {
+    width: 100%;
+  }
+
+  .editor-split,
+  .admin-assistant-layout,
+  .admin-prompts-layout,
+  .admin-runner-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-pane {
+    position: static;
+  }
+
+  .overview-masonry {
+    column-count: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell {
+    width: min(100%, calc(100% - 16px));
+    padding: 16px 0 52px;
+  }
+
+  .topbar {
+    gap: 12px;
+    padding: 12px 0 20px;
+  }
+
+  .brand {
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 16px;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .hero-copy,
+  .hero-card,
+  .panel {
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .section-header,
+  .action-row,
+  .post-meta,
+  .article-engagement-bar,
+  .inline-form,
+  .modal-header {
+    gap: 12px;
+  }
+
+  .article-engagement-bar {
+    align-items: stretch;
+  }
+
+  .ask-widget {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .ask-fab {
+    width: 60px;
+    height: 60px;
+  }
+
+  .ask-popover {
+    width: min(100vw - 16px, 440px);
+    max-height: min(72vh, 640px);
+    min-height: min(72vh, 640px);
+  }
+
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  .modal {
+    border-radius: 22px;
+    padding: 18px;
+  }
+
+  .overview-editor-grid {
     grid-template-columns: 1fr;
   }
 }
